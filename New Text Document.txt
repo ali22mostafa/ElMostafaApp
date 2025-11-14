@@ -1,0 +1,844 @@
+main page go dashboard-oreder.html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم - شركة المصطفى</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #111;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    .aggregation-card {
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      border: 1px solid yellow;
+    }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    .summary-table th, .summary-table td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #444;
+    }
+
+    .summary-table th {
+      background-color: #333;
+      color: yellow;
+    }
+
+    .export-btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .logo {
+      display: block;
+      margin: 10px auto;
+      max-width: 220px;
+      border-radius: 20px;
+      animation: bounceIn 1s ease-out, pulse 2s 2s ease-in-out infinite;
+      transform-origin: center;
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .logo:hover {
+      transform: scale(1.05) rotate(2deg);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    h1 {
+      color: yellow;
+      text-align: center;
+    }
+    .orders-container {
+      margin-top: 30px;
+    }
+    .order-card {
+      background-color: #222;
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #444;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+    .order-id {
+      font-weight: bold;
+      color: yellow;
+    }
+    .order-date {
+      color: #aaa;
+      font-size: 14px;
+    }
+    .order-status {
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .status-new {
+      background-color: #ffcc00;
+      color: #000;
+    }
+    .status-processing {
+      background-color: #0066ff;
+      color: #fff;
+    }
+    .status-completed {
+      background-color: #00aa00;
+      color: #fff;
+    }
+    .status-cancelled {
+      background-color: #ff3333;
+      color: #fff;
+    }
+    .customer-info {
+      margin-bottom: 10px;
+    }
+    .order-items {
+      margin: 10px 0;
+    }
+    
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+    }
+    .order-total {
+      text-align: left;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .action-buttons {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .action-btn {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .print-btn {
+      background-color: yellow;
+      color: black;
+    }
+    .complete-btn {
+      background-color: #00aa00;
+      color: white;
+    }
+    .cancel-btn {
+      background-color: #ff3333;
+      color: white;
+    }
+    .delete-btn {
+      background-color: #ff3333;
+      color: white;
+    }
+    .delete-all-btn {
+      background-color: #ff3333;
+      color: white;
+      margin-top: 10px;
+    }
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 8px 15px;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .filter-btn.active {
+      background-color: yellow;
+      color: black;
+    }
+    .search-box {
+      margin-bottom: 20px;
+    }
+    .search-input {
+      padding: 10px;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 5px;
+      border: none;
+      background-color: #333;
+      color: white;
+    }
+
+    .back-btn1 {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #0d47a1;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: background 0.3s ease;
+    }
+
+    .back-btn1:hover {
+      background-color: #1565c0;
+    }
+    .notification {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #4CAF50;
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      z-index: 1000;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="notification" class="notification"></div>
+  <a href="index.html" class="back-btn1">← رجوع</a>
+  <header>
+    <img src="img/zz.jpg" alt="شعار الشركة" class="logo" />
+    <p>لوحة تحكم مسؤول - شركة المصطفى</p>
+  </header>
+
+  <div class="container">
+    <!-- قسم تجميع الطلبات -->
+    <div class="aggregation-card">
+      <h2>تجميع طلبات منتجات المصطفى</h2>
+      <div class="action-buttons">
+        <button class="action-btn" onclick="calculateAllOrders()">تحديث التجميع</button>
+        <button class="export-btn" onclick="exportAllProducts()">تصدير Excel</button>
+        <button class="action-btn print-btn" onclick="printAggregation()">طباعة التقرير</button>
+        <button class="delete-all-btn" onclick="deleteAllCompletedAndCancelledOrders()">حذف جميع الطلبات المكتملة والملغية</button>
+      </div>
+      
+      <div id="all-summary">
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th>اسم المنتج</th>
+              <th>الكمية الكلية</th>
+              <th>عدد الطلبات</th>
+              <th>الإيرادات</th>
+            </tr>
+          </thead>
+          <tbody id="all-products-list">
+            <!-- سيتم ملؤها بالبيانات -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <h1>إدارة الطلبات</h1>
+    
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterOrders('all')">الكل</button>
+      <button class="filter-btn" onclick="filterOrders('new')">جديد</button>
+      <button class="filter-btn" onclick="filterOrders('processing')">قيد المعالجة</button>
+      <button class="filter-btn" onclick="filterOrders('completed')">مكتمل</button>
+      <button class="filter-btn" onclick="filterOrders('cancelled')">ملغي</button>
+    </div>
+    
+    <div class="search-box">
+      <input type="text" class="search-input" placeholder="ابحث برقم الطلب أو اسم العميل..." oninput="searchOrders(this.value)">
+    </div>
+    
+    <div class="orders-container" id="orders-container">
+      <!-- سيتم ملء الطلبات هنا -->
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+    // تكوين Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBKtxMNJ3n_YIsy671sbhlk8Qm1yt5uSB4",
+      authDomain: "mostafa-products.firebaseapp.com",
+      projectId: "mostafa-products",
+      storageBucket: "mostafa-products.appspot.com",
+      messagingSenderId: "841270845665",
+      appId: "1:841270845665:web:f2f857112688b8b8be57a0"
+    };
+
+    // تهيئة Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // متغيرات التطبيق
+    let allOrders = [];
+    let currentFilter = 'all';
+    let currentSearch = '';
+    
+    // متغير لتخزين تجميع جميع المنتجات
+    let allProductsAggregation = {};
+    
+    // جلب جميع الطلبات
+    function fetchOrders() {
+      db.collection('orders').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+        allOrders = [];
+        snapshot.forEach(doc => {
+          const order = doc.data();
+          order.id = doc.id;
+          // تحويل الطابع الزمني إلى تاريخ قابل للقراءة
+          if (order.timestamp && order.timestamp.toDate) {
+            order.formattedDate = order.timestamp.toDate().toLocaleString('ar-EG');
+          } else {
+            order.formattedDate = 'غير معروف';
+          }
+          allOrders.push(order);
+        });
+        renderOrders();
+        calculateAllOrders(); // حساب التجميع تلقائياً عند جلب البيانات
+      });
+    }
+    
+    // تصفية الطلبات
+    function filterOrders(status) {
+      currentFilter = status;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      renderOrders();
+    }
+    
+    // بحث الطلبات
+    function searchOrders(query) {
+      currentSearch = query.toLowerCase();
+      renderOrders();
+    }
+    
+    // عرض الطلبات
+    function renderOrders() {
+      const container = document.getElementById('orders-container');
+      
+      // تصفية الطلبات حسب الحالة والبحث
+      const filteredOrders = allOrders.filter(order => {
+        const matchesFilter = currentFilter === 'all' || 
+                            (currentFilter === 'new' && order.status === 'جديد') ||
+                            (currentFilter === 'processing' && order.status === 'قيد المعالجة') ||
+                            (currentFilter === 'completed' && order.status === 'مكتمل') ||
+                            (currentFilter === 'cancelled' && order.status === 'ملغي');
+        
+        const matchesSearch = currentSearch === '' || 
+                            order.id.toLowerCase().includes(currentSearch) ||
+                            order.customerName.toLowerCase().includes(currentSearch) ||
+                            order.customerPhone.toLowerCase().includes(currentSearch);
+        
+        return matchesFilter && matchesSearch;
+      });
+      
+      if (filteredOrders.length === 0) {
+        container.innerHTML = '<p>لا توجد طلبات متطابقة</p>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      filteredOrders.forEach(order => {
+        const orderElement = document.createElement('div');
+        orderElement.className = 'order-card';
+        
+        // تحديد فئة الحالة
+        let statusClass = '';
+        if (order.status === 'جديد') statusClass = 'status-new';
+        else if (order.status === 'قيد المعالجة') statusClass = 'status-processing';
+        else if (order.status === 'مكتمل') statusClass = 'status-completed';
+        else if (order.status === 'ملغي') statusClass = 'status-cancelled';
+        
+        orderElement.innerHTML = `
+          <div class="order-header">
+            <div>
+              <span class="order-id">رقم الطلب: ${order.id}</span>
+              <span class="order-date">${order.formattedDate}</span>
+            </div>
+            <span class="order-status ${statusClass}">${order.status}</span>
+          </div>
+          
+          <div class="customer-info">
+            <p><strong>العميل:</strong> ${order.customerName}</p>
+            <p><strong>الهاتف:</strong> ${order.customerPhone}</p>
+            <p><strong>العنوان:</strong> ${order.customerAddress}</p>
+            ${order.notes ? `<p><strong>ملاحظات:</strong> ${order.notes}</p>` : ''}
+          </div>
+          
+          <div class="order-items">
+            ${order.items.map(item => `
+              <div class="order-item">
+                <span>${item.name} (${item.quantity} × ${item.price} ج)</span>
+                <span>${(item.quantity * item.price).toFixed(2)} ج</span>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="order-total">الإجمالي: ${order.total.toFixed(2)} ج</div>
+          
+          <div class="action-buttons">
+            <button class="action-btn print-btn" onclick="printOrder('${order.id}')">طباعة</button>
+            ${order.status !== 'مكتمل' && order.status !== 'ملغي' ? `
+              <button class="action-btn complete-btn" onclick="updateOrderStatus('${order.id}', 'مكتمل')">تم الإنجاز</button>
+              <button class="action-btn cancel-btn" onclick="updateOrderStatus('${order.id}', 'ملغي')">إلغاء</button>
+            ` : ''}
+            ${order.status === 'مكتمل' ? `
+              <button class="action-btn delete-btn" onclick="deleteOrder('${order.id}')">حذف الطلب</button>
+            ` : ''}
+          </div>
+        `;
+        
+        container.appendChild(orderElement);
+      });
+    }
+    
+    // إظهار الإشعار
+    function showNotification(message, isSuccess = true) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.style.backgroundColor = isSuccess ? '#4CAF50' : '#f44336';
+      notification.style.display = 'block';
+      
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 3000);
+    }
+    
+    // تحديث حالة الطلب
+    function updateOrderStatus(orderId, newStatus) {
+      if (confirm(`هل أنت متأكد من تغيير حالة الطلب إلى "${newStatus}"؟`)) {
+        db.collection('orders').doc(orderId).update({
+          status: newStatus,
+          lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+          showNotification('تم تحديث حالة الطلب بنجاح');
+          
+          // إرسال إشعار للمستخدم إذا كانت الحالة الجديدة "مكتمل"
+          if (newStatus === 'مكتمل') {
+            const order = allOrders.find(o => o.id === orderId);
+            if (order && order.userId) {
+              db.collection('notifications').add({
+                userId: order.userId,
+                orderId: orderId,
+                message: `تم إكمال طلبك رقم ${orderId}`,
+                read: false,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+              });
+              
+              // تحديث بيانات المستخدم إذا كان مسجلاً
+              updateUserOrderHistory(order.userId, orderId, newStatus);
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error updating order: ', error);
+          showNotification('حدث خطأ أثناء تحديث حالة الطلب', false);
+        });
+      }
+    }
+
+    function updateUserOrderHistory(userId, orderId, status) {
+      db.collection('users').doc(userId).get()
+        .then(doc => {
+          if (doc.exists) {
+            const userData = doc.data();
+            const orders = userData.orders || [];
+            
+            // البحث عن الطلب وتحديث حالته
+            const updatedOrders = orders.map(order => {
+              if (order.id === orderId) {
+                return { ...order, status: status };
+              }
+              return order;
+            });
+            
+            // إذا لم يكن الطلب موجوداً في سجل المستخدم نضيفه
+            if (!updatedOrders.some(order => order.id === orderId)) {
+              // استخدام تاريخ محلي بدلاً من FieldValue.serverTimestamp()
+              updatedOrders.push({
+                id: orderId,
+                status: status,
+                date: new Date().toISOString() // استخدام تاريخ محلي بدلاً من FieldValue
+              });
+            }
+            
+            // تحديث بيانات المستخدم
+            return db.collection('users').doc(userId).update({
+              orders: updatedOrders
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error updating user order history:', error);
+        });
+    }
+    
+    // حذف طلب
+    function deleteOrder(orderId) {
+      if (confirm('هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذه العملية.')) {
+        db.collection('orders').doc(orderId).delete()
+          .then(() => {
+            showNotification('تم حذف الطلب بنجاح');
+          })
+          .catch(error => {
+            console.error('Error deleting order: ', error);
+            showNotification('حدث خطأ أثناء حذف الطلب', false);
+          });
+      }
+    }
+    
+    // حذف جميع الطلبات المكتملة والملغية
+    function deleteAllCompletedAndCancelledOrders() {
+      if (confirm('هل أنت متأكد من حذف جميع الطلبات المكتملة والملغية؟ لا يمكن التراجع عن هذه العملية.')) {
+        const batch = db.batch();
+        const ordersToDelete = allOrders.filter(order => order.status === 'مكتمل' || order.status === 'ملغي');
+        
+        if (ordersToDelete.length === 0) {
+          showNotification('لا توجد طلبات مكتملة أو ملغية للحذف', false);
+          return;
+        }
+        
+        ordersToDelete.forEach(order => {
+          const orderRef = db.collection('orders').doc(order.id);
+          batch.delete(orderRef);
+        });
+        
+        batch.commit()
+          .then(() => {
+            showNotification(`تم حذف ${ordersToDelete.length} طلب بنجاح`);
+          })
+          .catch(error => {
+            console.error('Error deleting orders: ', error);
+            showNotification('حدث خطأ أثناء حذف الطلبات', false);
+          });
+      }
+    }
+    
+    // طباعة الطلب
+    function printOrder(orderId) {
+      const order = allOrders.find(o => o.id === orderId);
+      if (!order) return;
+      
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html dir="rtl">
+        <head>
+          <title>طباعة الطلب ${order.id}</title>
+          <style>
+            body { font-family: Arial; margin: 20px; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .order-info { margin-bottom: 15px; }
+            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+            th { background-color: #f2f2f2; }
+            .total { font-weight: bold; text-align: left; margin-top: 10px; }
+            .footer { margin-top: 30px; text-align: center; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h2>شركة المصطفى لتصنيع اللحوم</h2>
+            <h3>فاتورة طلب</h3>
+          </div>
+          
+          <div class="order-info">
+            <p><strong>رقم الطلب:</strong> ${order.id}</p>
+            <p><strong>التاريخ:</strong> ${order.formattedDate}</p>
+            <p><strong>العميل:</strong> ${order.customerName}</p>
+            <p><strong>الهاتف:</strong> ${order.customerPhone}</p>
+            <p><strong>العنوان:</strong> ${order.customerAddress}</p>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>المنتج</th>
+                <th>الكمية</th>
+                <th>السعر</th>
+                <th>الإجمالي</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${order.items.map(item => `
+                <tr>
+                  <td>${item.name}</td>
+                  <td>${item.quantity}</td>
+                  <td>${item.price} ج</td>
+                  <td>${(item.quantity * item.price).toFixed(2)} ج</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <div class="total">الإجمالي: ${order.total.toFixed(2)} ج</div>
+          
+          ${order.notes ? `<div class="notes"><strong>ملاحظات:</strong> ${order.notes}</div>` : ''}
+          
+          <div class="footer">
+            <p>شكراً لثقتكم بشركة المصطفى</p>
+            <p>للاستفسار: 01002685167</p>
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+    }
+    
+    // دالة تجميع جميع الطلبات
+    function calculateAllOrders() {
+      allProductsAggregation = {};
+      
+      // فلترة الطلبات المكتملة فقط
+      const completedOrders = allOrders.filter(order => order.status === 'مكتمل');
+      
+      completedOrders.forEach(order => {
+        if (!order.items) return;
+        
+        order.items.forEach(item => {
+          const productName = item.name.trim();
+          
+          if (!allProductsAggregation[productName]) {
+            allProductsAggregation[productName] = {
+              totalQuantity: 0,
+              orderCount: 0,
+              totalRevenue: 0,
+              isMustafa: productName.includes('المصطفى') || productName.includes('مصطفي') || productName.includes('mostafa')
+            };
+          }
+          
+          allProductsAggregation[productName].totalQuantity += item.quantity || 0;
+          allProductsAggregation[productName].orderCount += 1;
+          allProductsAggregation[productName].totalRevenue += (item.price || 0) * (item.quantity || 0);
+        });
+      });
+      
+      displayAllProducts();
+    }
+    
+    // دالة عرض جميع المنتجات
+    function displayAllProducts() {
+      const container = document.getElementById('all-products-list');
+      container.innerHTML = '';
+      
+      if (Object.keys(allProductsAggregation).length === 0) {
+        container.innerHTML = '<tr><td colspan="4">لا توجد طلبات مكتملة</td></tr>';
+        return;
+      }
+      
+      // فصل منتجات المصطفى عن الباقي
+      const mustafaProducts = [];
+      const otherProducts = [];
+      
+      for (const [productName, data] of Object.entries(allProductsAggregation)) {
+        if (data.isMustafa) {
+          mustafaProducts.push([productName, data]);
+        } else {
+          otherProducts.push([productName, data]);
+        }
+      }
+      
+      // ترتيب منتجات المصطفى حسب الكمية
+      mustafaProducts.sort((a, b) => b[1].totalQuantity - a[1].totalQuantity);
+      
+      // ترتيب المنتجات الأخرى حسب الكمية
+      otherProducts.sort((a, b) => b[1].totalQuantity - a[1].totalQuantity);
+      
+      // دمج المصفوفتين (منتجات المصطفى أولاً)
+      const sortedProducts = [...mustafaProducts, ...otherProducts];
+      
+      // عرض البيانات
+      sortedProducts.forEach(([productName, data]) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${productName}</td>
+          <td>${data.totalQuantity}</td>
+          <td>${data.orderCount}</td>
+          <td>${data.totalRevenue.toFixed(2)} ج</td>
+        `;
+        container.appendChild(row);
+      });
+    }
+    
+    // دالة تصدير جميع المنتجات إلى Excel
+    function exportAllProducts() {
+      if (Object.keys(allProductsAggregation).length === 0) {
+        showNotification('لا توجد بيانات لتصديرها. يرجى حساب التجميع أولاً.', false);
+        return;
+      }
+      
+      // تحضير البيانات
+      const data = [
+        ['اسم المنتج', 'الكمية الكلية', 'عدد الطلبات', 'إجمالي الإيرادات']
+      ];
+      
+      for (const [productName, productData] of Object.entries(allProductsAggregation)) {
+        data.push([
+          productName,
+          productData.totalQuantity,
+          productData.orderCount,
+          productData.totalRevenue.toFixed(2) + ' ج'
+        ]);
+      }
+      
+      // إنشاء ملف Excel
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      XLSX.utils.book_append_sheet(wb, ws, "جميع المنتجات");
+      
+      // حفظ الملف
+      const dateStr = new Date().toLocaleDateString('ar-EG');
+      XLSX.writeFile(wb, `تجميع_المنتجات_${dateStr}.xlsx`);
+      showNotification('تم تصدير البيانات بنجاح');
+    }
+    
+    // دالة طباعة تقرير التجميع
+    function printAggregation() {
+      if (Object.keys(allProductsAggregation).length === 0) {
+        showNotification('لا توجد بيانات لطباعتها. يرجى حساب التجميع أولاً.', false);
+        return;
+      }
+      
+      const printWindow = window.open('', '_blank');
+      
+      let content = `
+        <!DOCTYPE html>
+        <html dir="rtl">
+        <head>
+          <title>تقرير تجميع المنتجات</title>
+          <style>
+            body { font-family: Arial; margin: 20px; }
+            .header { text-align: center; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+            th { background-color: #f2f2f2; }
+            .mustafa-row { background-color: #ffffcc; }
+            .footer { margin-top: 30px; text-align: center; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h2>شركة المصطفى لتصنيع اللحوم</h2>
+            <h3>تقرير تجميع المنتجات المكتملة</h3>
+            <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>اسم المنتج</th>
+                <th>الكمية الكلية</th>
+                <th>عدد الطلبات</th>
+                <th>الإيرادات</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      // فصل منتجات المصطفى عن الباقي
+      const mustafaProducts = [];
+      const otherProducts = [];
+      
+      for (const [productName, data] of Object.entries(allProductsAggregation)) {
+        if (data.isMustafa) {
+          mustafaProducts.push([productName, data]);
+        } else {
+          otherProducts.push([productName, data]);
+        }
+      }
+      
+      // ترتيب المنتجات
+      mustafaProducts.sort((a, b) => b[1].totalQuantity - a[1].totalQuantity);
+      otherProducts.sort((a, b) => b[1].totalQuantity - a[1].totalQuantity);
+      
+      // إضافة منتجات المصطفى أولاً
+      mustafaProducts.forEach(([productName, data]) => {
+        content += `
+          <tr class="mustafa-row">
+            <td>${productName}</td>
+            <td>${data.totalQuantity}</td>
+            <td>${data.orderCount}</td>
+            <td>${data.totalRevenue.toFixed(2)} ج</td>
+          </tr>
+        `;
+      });
+      
+      // إضافة المنتجات الأخرى
+      otherProducts.forEach(([productName, data]) => {
+        content += `
+          <tr>
+            <td>${productName}</td>
+            <td>${data.totalQuantity}</td>
+            <td>${data.orderCount}</td>
+            <td>${data.totalRevenue.toFixed(2)} ج</td>
+          </tr>
+        `;
+      });
+      
+      content += `
+            </tbody>
+          </table>
+          
+          <div class="footer">
+            <p>تم إنشاء التقرير بواسطة نظام إدارة الطلبات - شركة المصطفى</p>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      printWindow.document.write(content);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+    }
+    
+    // تهيئة الصفحة
+    document.addEventListener('DOMContentLoaded', fetchOrders);
+  </script>
+
+  <!-- مكتبة SheetJS لتصدير Excel -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js"></script>
+</body>
+</html>

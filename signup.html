@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>إنشاء حساب - شركة المصطفى</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #111;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .logo {
+      display: block;
+      margin: 10px auto;
+      max-width: 220px;
+      border-radius: 20px;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      color: yellow;
+      text-align: center;
+    }
+
+    .signup-form {
+      background-color: #222;
+      border: 1px solid yellow;
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: yellow;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      background-color: #333;
+      color: white;
+      font-size: 16px;
+    }
+
+    .submit-btn {
+      background-color: yellow;
+      color: black;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 20px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .back-btn {
+      background-color: #444;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #location-status {
+      font-size: 14px;
+      color: lightgreen;
+      margin-top: 5px;
+    }
+
+    #map {
+      height: 300px;
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 10px;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      color: white;
+    }
+
+    .radio-option input {
+      width: auto;
+      margin-left: 8px;
+    }
+  </style>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+  />
+</head>
+<body>
+  <header>
+    <img src="img/zz.jpg" alt="شعار الشركة" class="logo" />
+  </header>
+
+  <div class="container">
+    <h1>إنشاء حساب جديد</h1>
+
+    <div class="signup-form">
+      <form id="signup-form">
+        <div class="form-group">
+          <label for="name">الاسم بالكامل*</label>
+          <input type="text" id="name" required />
+        </div>
+        <div class="form-group">
+          <label for="phone">رقم الهاتف*</label>
+          <input type="tel" id="phone" required />
+        </div>
+        <div class="form-group">
+          <label for="address">العنوان*</label>
+          <input type="text" id="address" required />
+        </div>
+        <div class="form-group">
+          <label for="password">كلمة المرور*</label>
+          <input type="password" id="password" required />
+        </div>
+
+        <div class="form-group">
+          <label>أيام التوصيل المفضلة*</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="deliveryDays" value="سبت - اثنين - أربعاء" required>
+              سبت - اثنين - أربعاء
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="deliveryDays" value="أحد - ثلاثاء - خميس" required>
+              أحد - ثلاثاء - خميس
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>الموقع الجغرافي*</label>
+          <button type="button" class="submit-btn" onclick="getLocation()">📍 احصل على موقعي</button>
+          <p id="location-status"></p>
+          <div id="map"></div>
+        </div>
+
+        <div id="error-message" class="error"></div>
+        <button type="submit" class="submit-btn">إنشاء حساب</button>
+        <button type="button" class="back-btn" onclick="window.location.href='index.html'">العودة للرئيسية</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+  <script>
+    // إعداد Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBKtxMNJ3n_YIsy671sbhlk8Qm1yt5uSB4",
+      authDomain: "mostafa-products.firebaseapp.com",
+      projectId: "mostafa-products",
+      storageBucket: "mostafa-products.firebasestorage.app",
+      messagingSenderId: "841270845665",
+      appId: "1:841270845665:web:f2f857112688b8b8be57a0",
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let userLatitude = null;
+    let userLongitude = null;
+    let map = null;
+    let marker = null;
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        document.getElementById("location-status").textContent = "جاري تحديد الموقع...";
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+      } else {
+        document.getElementById("location-status").textContent =
+          "المتصفح لا يدعم تحديد الموقع";
+      }
+    }
+
+    function showPosition(position) {
+      userLatitude = position.coords.latitude;
+      userLongitude = position.coords.longitude;
+
+      document.getElementById(
+        "location-status"
+      ).textContent = `✅ تم تحديد الموقع: خط العرض ${userLatitude}, خط الطول ${userLongitude}`;
+
+      showMap(userLatitude, userLongitude);
+    }
+
+    function showError(error) {
+      const status = document.getElementById("location-status");
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          status.textContent = "❌ تم رفض إذن الوصول للموقع.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          status.textContent = "❌ معلومات الموقع غير متوفرة.";
+          break;
+        case error.TIMEOUT:
+          status.textContent = "⏱️ انتهت مهلة تحديد الموقع.";
+          break;
+        default:
+          status.textContent = "⚠️ حدث خطأ غير معروف أثناء تحديد الموقع.";
+      }
+    }
+
+    function showMap(lat, lng) {
+      const mapDiv = document.getElementById("map");
+      const position = [lat, lng];
+
+      if (map) {
+        map.setView(position, 16);
+        if (marker) {
+          marker.setLatLng(position);
+        } else {
+          marker = L.marker(position).addTo(map).bindPopup("موقعك الحالي").openPopup();
+        }
+      } else {
+        map = L.map(mapDiv).setView(position, 16);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(map);
+
+        marker = L.marker(position).addTo(map).bindPopup("موقعك الحالي").openPopup();
+      }
+    }
+
+    // إنشاء الحساب
+    document.getElementById("signup-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const address = document.getElementById("address").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const deliveryDays = document.querySelector('input[name="deliveryDays"]:checked').value;
+      const errorDiv = document.getElementById("error-message");
+      errorDiv.textContent = "";
+
+      if (!userLatitude || !userLongitude) {
+        errorDiv.textContent = 'يرجى تحديد الموقع أولاً بالضغط على زر "احصل على موقعي".';
+        return;
+      }
+
+      try {
+        const phoneCheck = await db
+          .collection("users")
+          .where("phone", "==", phone)
+          .get();
+
+        if (!phoneCheck.empty) {
+          errorDiv.textContent = "رقم الهاتف مسجل بالفعل";
+          return;
+        }
+
+        const userRef = await db.collection("users").add({
+          name,
+          phone,
+          address,
+          password,
+          deliveryDays,
+          location: {
+            latitude: userLatitude,
+            longitude: userLongitude,
+          },
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+        const user = { id: userRef.id, name, phone, address, deliveryDays };
+        localStorage.setItem("user", JSON.stringify(user));
+
+        window.location.href = "index.html";
+      } catch (error) {
+        console.error("Error signing up:", error);
+        errorDiv.textContent = "حدث خطأ أثناء إنشاء الحساب.";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>البروفايل - شركة المصطفى</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #111;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    .logo {
+      display: block;
+      margin: 10px auto;
+      max-width: 220px;
+      border-radius: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    h1 {
+      color: yellow;
+      text-align: center;
+    }
+    .profile-section {
+      background-color: #222;
+      border: 1px solid yellow;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .user-info {
+      margin-bottom: 15px;
+    }
+    .user-info label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .user-info input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+    .orders-container, .notifications-container {
+      margin-top: 30px;
+    }
+    .order-card, .notification-card {
+      background-color: #333;
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .order-header, .notification-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #444;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+    .order-id, .notification-id {
+      font-weight: bold;
+      color: yellow;
+    }
+    .order-date, .notification-date {
+      color: #aaa;
+      font-size: 14px;
+    }
+    .order-status {
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .status-new {
+      background-color: #ffcc00;
+      color: #000;
+    }
+    .status-processing {
+      background-color: #0066ff;
+      color: #fff;
+    }
+    .status-completed {
+      background-color: #00aa00;
+      color: #fff;
+    }
+    .status-cancelled {
+      background-color: #ff3333;
+      color: #fff;
+    }
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid #444;
+      margin-bottom: 5px;
+    }
+    .order-total {
+      text-align: left;
+      font-weight: bold;
+      margin-top: 10px;
+      font-size: 18px;
+    }
+    .no-orders, .no-notifications {
+      text-align: center;
+      color: #aaa;
+      margin-top: 20px;
+    }
+    .back-btn {
+      background-color: #444;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .notification-unread {
+      border-left: 5px solid yellow;
+    }
+    .mark-as-read {
+      background-color: #444;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .back-btn1 {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #0d47a1;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: background 0.3s ease;
+    }
+    .back-btn1:hover {
+      background-color: #1565c0;
+    }
+    .edit-order-btn {
+      background-color: #ffcc00;
+      color: #000;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .order-edit-form {
+      display: none;
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #444;
+      border-radius: 5px;
+    }
+    .order-edit-form label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .order-edit-form select, 
+    .order-edit-form input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+    .order-edit-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .save-edit-btn {
+      background-color: #00aa00;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .cancel-edit-btn {
+      background-color: #ff3333;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .item-actions {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .edit-item-btn, .remove-item-btn {
+      padding: 3px 8px;
+      border: none;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .edit-item-btn {
+      background-color: #ffcc00;
+      color: #000;
+    }
+    .remove-item-btn {
+      background-color: #ff3333;
+      color: white;
+    }
+    .item-edit-form {
+      display: none;
+      padding: 10px;
+      background-color: #444;
+      border-radius: 5px;
+      margin-top: 5px;
+    }
+    .cancel-order-btn {
+      background-color: #ff3333;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    .order-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+    .add-item-btn {
+      background-color: #0066ff;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    .add-item-form {
+      display: none;
+      padding: 15px;
+      background-color: #444;
+      border-radius: 5px;
+      margin-top: 15px;
+    }
+    .add-item-form select,
+    .add-item-form input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .radio-option {
+      display: flex;
+      align-items: center;
+      color: white;
+    }
+    .radio-option input {
+      width: auto;
+      margin-left: 8px;
+    }
+  </style>
+  
+ <style>/* غلاف الطلب */
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #444;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.order-id {
+  font-weight: bold;
+  color: yellow;
+  display: block;
+}
+
+.order-date {
+  font-size: 14px;
+  color: #aaa;
+}
+
+.order-status {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.status-new { background-color: #ffcc00; color: #000; }
+.status-processing { background-color: #0066ff; color: #fff; }
+.status-completed { background-color: #00aa00; color: #fff; }
+.status-cancelled { background-color: #ff3333; color: #fff; }
+
+/* العناصر */
+.order-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  background-color: #222;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 10px;
+  gap: 8px;
+}
+
+.order-item > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+/* أزرار التعديل والحذف */
+.item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.edit-item-btn,
+.remove-item-btn {
+  padding: 6px 10px;
+  font-size: 13px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.edit-item-btn { background-color: #ffcc00; color: #000; }
+.remove-item-btn { background-color: #ff3333; color: #fff; }
+
+/* نموذج تعديل الكمية */
+.item-edit-form {
+  display: none;
+  grid-column: 1 / -1; /* يمتد عبر كامل البطاقة */
+  padding: 12px;
+  background-color: #333;
+  border-radius: 6px;
+  margin-top: 6px;
+}
+
+.item-edit-form label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: yellow;
+}
+
+.item-edit-form input[type="number"] {
+  width: 100px;
+  padding: 8px;
+  font-size: 14px;
+  text-align: center;
+  border-radius: 5px;
+  border: none;
+  margin-bottom: 10px;
+  background: #444;
+  color: #fff;
+}
+
+/* أزرار حفظ وإلغاء */
+.item-edit-form button {
+  padding: 8px 14px;
+  font-size: 13px;
+  border: none;
+  border-radius: 5px;
+  margin-right: 6px;
+  cursor: pointer;
+}
+
+.item-edit-form button:first-of-type { background-color: #00aa00; color: #fff; }
+.item-edit-form button:last-of-type { background-color: #ff3333; color: #fff; }
+
+/* موبايل */
+@media (max-width: 700px) {
+  .order-item {
+    grid-template-columns: 1fr;
+    text-align: right;
+  }
+  .item-actions {
+    justify-content: flex-start;
+  }
+  .item-edit-form input[type="number"] {
+    width: 80%;
+  }
+  .item-edit-form button {
+    width: 28%;
+    font-size: 14px;
+  }
+}
+</style>
+  <style>
+    input,
+textarea,
+select {
+  font-size: 16px; /* يمنع الزوم على الموبايل */
+}
+
+  </style>
+  <!-- ضف هذا في الـ head -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+  <a href="index.html" class="back-btn1">← رجوع</a>
+  <header>
+    <img src="img/zz.jpg" alt="شعار الشركة" class="logo" />
+  </header>
+
+  <div class="container">
+    <h1>البروفايل الشخصي</h1>
+
+    <div class="profile-section">
+      <h2>معلومات الحساب</h2>
+      <div id="user-details" class="user-info">
+        <!-- سيتم تعبئتها بالجافاسكربت -->
+      </div>
+    </div>
+
+    <div style="display: none;" class="profile-section">
+      <h2>إشعاراتي</h2>
+      <div id="notifications-container" class="notifications-container">
+        <!-- سيتم ملؤها بالإشعارات -->
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <h2>طلباتي السابقة</h2>
+      <div id="orders-container" class="orders-container">
+        <!-- سيتم ملؤها بالطلبات -->
+      </div>
+    </div>
+
+    <button type="button" class="back-btn" onclick="window.location.href='index.html'">العودة للرئيسية</button>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBKtxMNJ3n_YIsy671sbhlk8Qm1yt5uSB4",
+      authDomain: "mostafa-products.firebaseapp.com",
+      projectId: "mostafa-products",
+      storageBucket: "mostafa-products.appspot.com",
+      messagingSenderId: "841270845665",
+      appId: "1:841270845665:web:f2f857112688b8b8be57a0"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // متغير لتخزين المنتجات المتاحة
+    let availableProducts = [];
+
+    // جلب المنتجات المتاحة من قاعدة البيانات
+    function fetchAvailableProducts() {
+      db.collection("products").where("available", "==", true).get()
+        .then((querySnapshot) => {
+          availableProducts = [];
+          querySnapshot.forEach((doc) => {
+            availableProducts.push({
+              id: doc.id,
+              ...doc.data()
+            });
+          });
+        })
+        .catch((error) => {
+          console.error("Error fetching products: ", error);
+        });
+    }
+
+    // التحقق من توفر المخزون قبل التعديل
+    async function checkStockAvailability(productId, requestedQuantity, currentQuantity = 0) {
+      try {
+        const productDoc = await db.collection("products").doc(productId).get();
+        
+        if (!productDoc.exists) {
+          return { available: false, message: "المنتج غير موجود" };
+        }
+        
+        const productData = productDoc.data();
+        const availableStock = productData.stock || 0;
+        const maxOrder = productData.maxOrder || 0;
+        
+        // حساب الكمية الفعلية المطلوبة (الفرق بين الكمية الجديدة والقديمة)
+        const actualRequestedQuantity = requestedQuantity - currentQuantity;
+        
+        // التحقق من توفر المخزون
+        if (availableStock < actualRequestedQuantity) {
+          return { 
+            available: false, 
+            message: `الكمية المطلوبة غير متوفرة. المتاح: ${availableStock} وحدة` 
+          };
+        }
+        
+        // التحقق من الحد الأقصى للطلب
+        if (maxOrder > 0 && requestedQuantity > maxOrder) {
+          
+          return { 
+            available: false, 
+            message: `تجاوزت الحد الأقصى للطلب. الحد الأقصى: ${maxOrder} وحدة` ,
+           
+            
+
+          }
+         
+        }
+        
+        return { available: true, productData: productData };
+      } catch (error) {
+        console.error("Error checking stock availability:", error);
+        return { available: false, message: "حدث خطأ أثناء التحقق من المخزون" };
+      }
+    }
+
+    // تحديث المخزون بعد التعديل
+    async function updateProductStock(productId, quantityChange) {
+      try {
+        const productRef = db.collection("products").doc(productId);
+        
+        await db.runTransaction(async (transaction) => {
+          const productDoc = await transaction.get(productRef);
+          
+          if (!productDoc.exists) {
+            throw new Error("المنتج غير موجود");
+          }
+          
+          const productData = productDoc.data();
+          const currentStock = productData.stock || 0;
+          const newStock = currentStock - quantityChange;
+          
+          if (newStock < 0) {
+            throw new Error("الكمية المطلوبة غير متوفرة في المخزون");
+          }
+          
+          transaction.update(productRef, { stock: newStock });
+        });
+        
+        return { success: true };
+      } catch (error) {
+        console.error("Error updating product stock:", error);
+        return { success: false, message: error.message };
+      }
+    }
+
+    function displayUserInfoAndData() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // عرض البيانات وزر التعديل
+      document.getElementById('user-details').innerHTML = `
+        <p><strong>الاسم:</strong> <span id="display-name">${user.name}</span></p>
+        <p><strong>رقم الهاتف:</strong> <span id="display-phone">${user.phone}</span></p>
+        <p><strong>العنوان:</strong> <span id="display-address">${user.address || ''}</span></p>
+        <p><strong>أيام التوصيل المفضلة:</strong> <span id="display-deliveryDays">${user.deliveryDays || ''}</span></p>
+        <button onclick="enableEdit('${user.id}')" class="back-btn">تعديل</button>
+        <div id="edit-form" style="display:none; margin-top: 20px;">
+          <label>الاسم:</label>
+          <input type="text" id="edit-name" value="${user.name}" />
+
+          <label>رقم الهاتف:</label>
+          <input type="text" id="edit-phone" value="${user.phone}" />
+
+          <label>العنوان:</label>
+          <input type="text" id="edit-address" value="${user.address || ''}" />
+
+          <label>أيام التوصيل المفضلة:</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="edit-deliveryDays" value="سبت - اثنين - أربعاء" ${user.deliveryDays === 'سبت - اثنين - أربعاء' ? 'checked' : ''}>
+              سبت - اثنين - أربعاء
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="edit-deliveryDays" value="أحد - ثلاثاء - خميس" ${user.deliveryDays === 'أحد - ثلاثاء - خميس' ? 'checked' : ''}>
+              أحد - ثلاثاء - خميس
+            </label>
+          </div>
+
+          <button onclick="saveUserChanges('${user.id}')" class="back-btn">حفظ التعديلات</button>
+        </div>
+      `;
+
+      // جلب الإشعارات
+      db.collection('notifications')
+        .where('userId', '==', user.id)
+        .orderBy('timestamp', 'desc')
+        .onSnapshot(snapshot => {
+          const notificationsContainer = document.getElementById('notifications-container');
+          if (snapshot.empty) {
+            notificationsContainer.innerHTML = '<p class="no-notifications">لا توجد إشعارات</p>';
+            return;
+          }
+
+          notificationsContainer.innerHTML = '';
+          snapshot.forEach(doc => {
+            const notification = doc.data();
+            notification.id = doc.id;
+
+            let formattedDate = 'غير معروف';
+            if (notification.timestamp && notification.timestamp.toDate) {
+              formattedDate = notification.timestamp.toDate().toLocaleString('ar-EG');
+            }
+
+            const notificationElement = document.createElement('div');
+            notificationElement.className = `notification-card ${notification.read ? '' : 'notification-unread'}`;
+            notificationElement.innerHTML = `
+              <div class="notification-header">
+                <span class="notification-id">${notification.message}</span>
+                <span class="notification-date">${formattedDate}</span>
+              </div>
+              ${!notification.read ? `<button class="mark-as-read" onclick="markNotificationAsRead('${notification.id}')">تم القراءة</button>` : ''}
+            `;
+
+            notificationsContainer.appendChild(notificationElement);
+          });
+        });
+
+      // جلب الطلبات
+      db.collection('orders')
+        .where('customerPhone', '==', user.phone)
+        .orderBy('timestamp', 'desc')
+        .onSnapshot(snapshot => {
+          const ordersContainer = document.getElementById('orders-container');
+          if (snapshot.empty) {
+            ordersContainer.innerHTML = '<p class="no-orders">لا توجد طلبات سابقة</p>';
+            return;
+          }
+
+          ordersContainer.innerHTML = '';
+          snapshot.forEach(doc => {
+            const order = doc.data();
+            order.id = doc.id;
+
+            let formattedDate = 'غير معروف';
+            if (order.timestamp && order.timestamp.toDate) {
+              formattedDate = order.timestamp.toDate().toLocaleString('ar-EG');
+            }
+
+            let statusClass = '';
+            if (order.status === 'جديد') statusClass = 'status-new';
+            else if (order.status === 'قيد المعالجة') statusClass = 'status-processing';
+            else if (order.status === 'مكتمل') statusClass = 'status-completed';
+            else if (order.status === 'ملغي') statusClass = 'status-cancelled';
+
+            const canEdit = order.status === 'جديد' || order.status === 'قيد المعالجة';
+
+            const orderElement = document.createElement('div');
+            orderElement.className = 'order-card';
+            orderElement.innerHTML = `
+              <div class="order-header">
+                <div>
+                  <span class="order-id">رقم الطلب: ${order.id}</span>
+                  <span class="order-date">${formattedDate}</span>
+                </div>
+                <span class="order-status ${statusClass}">${order.status}</span>
+              </div>
+              <div class="order-items" id="order-items-${order.id}">
+                ${order.items.map((item, index) => `
+                  <div class="order-item" id="item-${order.id}-${index}">
+                    <div>
+                      <span>${item.name} (${item.quantity} × ${item.price} ج)</span>
+                      <span>${(item.quantity * item.price).toFixed(2)} ج</span>
+                    </div>
+                    ${canEdit ? `
+                    <div class="item-actions">
+                      <button class="edit-item-btn" onclick="showEditItemForm('${order.id}', ${index}, ${item.quantity})">تعديل الكمية</button>
+                      <button class="remove-item-btn" onclick="removeItemFromOrder('${order.id}', ${index}, '${item.name}', '${user.id}', '${user.name}')">حذف</button>
+                    </div>
+                    <div id="edit-item-form-${order.id}-${index}" class="item-edit-form">
+                      <label>الكمية الجديدة:</label>
+                      <input type="number" id="item-quantity-${order.id}-${index}" value="${item.quantity}" min="1">
+                      <button onclick="updateItemQuantity('${order.id}', ${index}, '${item.id}', '${item.name}', '${item.price}', '${user.id}', '${user.name}')">حفظ</button>
+                      <button onclick="hideEditItemForm('${order.id}', ${index})">إلغاء</button>
+                    </div>
+                    ` : ''}
+                  </div>
+                `).join('')}
+              </div>
+              <div class="order-total">الإجمالي: ${order.total.toFixed(2)} ج</div>
+              
+              ${canEdit ? `
+              <div class="order-actions">
+                <button  style="display:none"  class="add-item-btn" onclick="showAddItemForm('${order.id}')">إضافة صنف</button>
+                <div>
+                  <button  style="display:none" class="edit-order-btn" onclick="showEditOrderForm('${order.id}')">تعديل الطلب</button>
+                  <button class="cancel-order-btn" onclick="cancelOrder('${order.id}', '${user.id}', '${user.name}')">إلغاء الطلب</button>
+                </div>
+              </div>
+              
+              <div id="add-item-form-${order.id}" class="add-item-form">
+                <label>الصنف:</label>
+                <select id="new-item-product-${order.id}">
+                  ${availableProducts.map(product => `
+                    <option value="${product.id}" data-price="${product.price}">${product.name} - ${product.price} ج</option>
+                  `).join('')}
+                </select>
+                
+                <label>الكمية:</label>
+                <input type="number" id="new-item-quantity-${order.id}" value="1" min="1">
+                
+                <div class="order-edit-buttons">
+                  <button class="save-edit-btn" onclick="addItemToOrder('${order.id}', '${user.id}', '${user.name}')">إضافة</button>
+                  <button class="cancel-edit-btn" onclick="hideAddItemForm('${order.id}')">إلغاء</button>
+                </div>
+              </div>
+              
+              <div id="edit-order-${order.id}" class="order-edit-form">
+                <label>حالة الطلب:</label>
+                <select id="edit-status-${order.id}">
+                  <option value="جديد" ${order.status === 'جديد' ? 'selected' : ''}>جديد</option>
+                  <option value="قيد المعالجة" ${order.status === 'قيد المعالجة' ? 'selected' : ''}>قيد المعالجة</option>
+                  <option value="مكتمل" ${order.status === 'مكتمل' ? 'selected' : ''}>مكتمل</option>
+                  <option value="ملغي" ${order.status === 'ملغي' ? 'selected' : ''}>ملغي</option>
+                </select>
+                
+                <label>ملاحظات:</label>
+                <input type="text" id="edit-notes-${order.id}" value="${order.notes || ''}" />
+                
+                <div class="order-edit-buttons">
+                  <button class="save-edit-btn" onclick="saveOrderChanges('${order.id}', '${user.id}', '${user.name}')">حفظ التعديلات</button>
+                  <button class="cancel-edit-btn" onclick="hideEditOrderForm('${order.id}')">إلغاء</button>
+                </div>
+              </div>
+              ` : ''}
+            `;
+
+            ordersContainer.appendChild(orderElement);
+          });
+        });
+    }
+
+    function enableEdit(userId) {
+      document.getElementById('edit-form').style.display = 'block';
+    }
+
+    function saveUserChanges(userId) {
+      const name = document.getElementById('edit-name').value.trim();
+      const phone = document.getElementById('edit-phone').value.trim();
+      const address = document.getElementById('edit-address').value.trim();
+      const deliveryDays = document.querySelector('input[name="edit-deliveryDays"]:checked').value;
+
+      if (!name || !phone) {
+        alert("الاسم ورقم الهاتف مطلوبان.");
+        return;
+      }
+
+      db.collection('users').doc(userId).update({
+        name: name,
+        phone: phone,
+        address: address,
+        deliveryDays: deliveryDays
+      }).then(() => {
+        const updatedUser = { id: userId, name, phone, address, deliveryDays };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        Swal.fire({
+  icon: 'success',
+  title: 'تم الحفظ',
+  text: 'تم حفظ التعديلات بنجاح.',
+  confirmButtonText: 'حسناً'
+});
+
+        displayUserInfoAndData();
+      }).catch((error) => {
+        console.error("حدث خطأ أثناء الحفظ:", error);
+        alert("حدث خطأ أثناء حفظ التعديلات.");
+      });
+    }
+
+    function markNotificationAsRead(notificationId) {
+      db.collection('notifications').doc(notificationId).update({ read: true })
+        .then(() => console.log('تم التعليم كمقروء'))
+        .catch(err => console.error('خطأ في التحديث:', err));
+    }
+
+    function showEditItemForm(orderId, itemIndex, currentQuantity) {
+      document.getElementById(`edit-item-form-${orderId}-${itemIndex}`).style.display = 'block';
+      document.getElementById(`item-quantity-${orderId}-${itemIndex}`).value = currentQuantity;
+    }
+
+    function hideEditItemForm(orderId, itemIndex) {
+      document.getElementById(`edit-item-form-${orderId}-${itemIndex}`).style.display = 'none';
+    }
+
+    async function updateItemQuantity(orderId, itemIndex, productId, productName, productPrice, userId, userName) {
+      const newQuantity = parseInt(document.getElementById(`item-quantity-${orderId}-${itemIndex}`).value);
+      
+      if (isNaN(newQuantity) || newQuantity < 1) {
+      Swal.fire({icon:'error',title:'خطأ في الكمية',text:'الكمية يجب أن تكون رقم صحيح أكبر من الصفر',confirmButtonText:'حسناً'});
+        return;
+      }
+
+      try {
+        // جلب بيانات الطلب الحالية
+        const orderDoc = await db.collection('orders').doc(orderId).get();
+        if (!orderDoc.exists) {
+          alert("الطلب غير موجود");
+          return;
+        }
+
+        const order = orderDoc.data();
+        const currentItem = order.items[itemIndex];
+        const currentQuantity = currentItem.quantity;
+
+        // التحقق من توفر المخزون
+        const stockCheck = await checkStockAvailability(productId, newQuantity, currentQuantity);
+        if (!stockCheck.available) {
+          alert(stockCheck.message);
+          return;
+        }
+
+        // حساب الفرق في الكمية لتحديث المخزون
+        const quantityDifference = newQuantity - currentQuantity;
+
+        // تحديث المخزون
+        const stockUpdate = await updateProductStock(productId, quantityDifference);
+        if (!stockUpdate.success) {
+          alert(stockUpdate.message);
+          return;
+        }
+
+        // تحديث الطلب
+        const items = [...order.items];
+        items[itemIndex].quantity = newQuantity;
+        
+        const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        await db.collection('orders').doc(orderId).update({
+          items: items,
+          total: newTotal,
+          lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+       Swal.fire('تم الحفظ!', 'تم حفظ التعديلات بنجاح.', 'success');
+
+        hideEditItemForm(orderId, itemIndex);
+        
+        sendAdminNotification(
+          orderId, 
+          userId, 
+          userName, 
+          `قام بتعديل كمية "${productName}" من ${currentQuantity} إلى ${newQuantity}`
+        );
+      } catch (error) {
+        console.error("Error updating item quantity: ", error);
+        alert("حدث خطأ أثناء تحديث الكمية");
+      }
+    }
+
+    async function removeItemFromOrder(orderId, itemIndex, productName, userId, userName) {
+      if (!confirm(`هل أنت متأكد من حذف "${productName}" من الطلب؟`)) {
+        return;
+      }
+
+      try {
+        // جلب بيانات الطلب الحالية
+        const orderDoc = await db.collection('orders').doc(orderId).get();
+        if (!orderDoc.exists) {
+          alert("الطلب غير موجود");
+          return;
+        }
+
+        const order = orderDoc.data();
+        const items = [...order.items];
+        const removedItem = items.splice(itemIndex, 1)[0];
+        
+        // إرجاع الكمية المحذوفة إلى المخزون
+        const stockUpdate = await updateProductStock(removedItem.id, -removedItem.quantity);
+        if (!stockUpdate.success) {
+          alert(stockUpdate.message);
+          return;
+        }
+
+        const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        if (items.length === 0) {
+          await db.collection('orders').doc(orderId).update({
+            status: 'ملغي',
+            items: items,
+            total: newTotal,
+            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+            cancellationReason: 'تم حذف جميع الأصناف'
+          });
+        } else {
+          await db.collection('orders').doc(orderId).update({
+            items: items,
+            total: newTotal,
+            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+
+        alert("تم حذف الصنف من الطلب");
+        
+        sendAdminNotification(
+          orderId, 
+          userId, 
+          userName, 
+          `قام بحذف "${productName}" من الطلب وتم إرجاع ${removedItem.quantity} وحدة للمخزون`
+        );
+      } catch (error) {
+        console.error("Error removing item: ", error);
+        alert("حدث خطأ أثناء حذف الصنف");
+      }
+    }
+
+    async function cancelOrder(orderId, userId, userName) {
+      if (!confirm("هل أنت متأكد من إلغاء هذا الطلب؟")) {
+        return;
+      }
+
+      try {
+        // جلب بيانات الطلب الحالية
+        const orderDoc = await db.collection('orders').doc(orderId).get();
+        if (!orderDoc.exists) {
+          alert("الطلب غير موجود");
+          return;
+        }
+
+        const order = orderDoc.data();
+
+        // إرجاع جميع الكميات إلى المخزون
+        for (const item of order.items) {
+          await updateProductStock(item.id, -item.quantity);
+        }
+
+        await db.collection('orders').doc(orderId).update({
+          status: 'ملغي',
+          lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+          cancellationReason: 'تم الإلغاء من قبل العميل'
+        });
+
+        alert("تم إلغاء الطلب بنجاح وتم إرجاع جميع الكميات للمخزون");
+        
+        sendAdminNotification(
+          orderId, 
+          userId, 
+          userName, 
+          "قام بإلغاء الطلب بالكامل وتم إرجاع جميع الكميات للمخزون"
+        );
+      } catch (error) {
+        console.error("Error canceling order: ", error);
+        alert("حدث خطأ أثناء إلغاء الطلب");
+      }
+    }
+
+    function showEditOrderForm(orderId) {
+      document.getElementById(`edit-order-${orderId}`).style.display = 'block';
+    }
+
+    function hideEditOrderForm(orderId) {
+      document.getElementById(`edit-order-${orderId}`).style.display = 'none';
+    }
+
+    function saveOrderChanges(orderId, userId, userName) {
+      const newStatus = document.getElementById(`edit-status-${orderId}`).value;
+      const newNotes = document.getElementById(`edit-notes-${orderId}`).value.trim();
+
+      db.collection('orders').doc(orderId).update({
+        status: newStatus,
+        notes: newNotes,
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(() => {
+        alert("تم تحديث الطلب بنجاح");
+        hideEditOrderForm(orderId);
+        
+        sendAdminNotification(
+          orderId, 
+          userId, 
+          userName, 
+          `قام بتعديل حالة الطلب إلى "${newStatus}"`
+        );
+      })
+      .catch(error => {
+        console.error("Error updating order: ", error);
+        alert("حدث خطأ أثناء تحديث الطلب");
+      });
+    }
+
+    function showAddItemForm(orderId) {
+      document.getElementById(`add-item-form-${orderId}`).style.display = 'block';
+    }
+
+    function hideAddItemForm(orderId) {
+      document.getElementById(`add-item-form-${orderId}`).style.display = 'none';
+    }
+
+    async function addItemToOrder(orderId, userId, userName) {
+      const productSelect = document.getElementById(`new-item-product-${orderId}`);
+      const productId = productSelect.value;
+      const productOption = productSelect.options[productSelect.selectedIndex];
+      const productName = productOption.text.split(' - ')[0];
+      const productPrice = parseFloat(productOption.getAttribute('data-price'));
+      const quantity = parseInt(document.getElementById(`new-item-quantity-${orderId}`).value);
+
+      if (isNaN(quantity) || quantity < 1) {
+        alert("الكمية يجب أن تكون رقم صحيح أكبر من الصفر");
+        return;
+      }
+
+      try {
+        // التحقق من توفر المخزون
+        const stockCheck = await checkStockAvailability(productId, quantity);
+        if (!stockCheck.available) {
+          alert(stockCheck.message);
+          return;
+        }
+
+        // جلب بيانات الطلب الحالية
+        const orderDoc = await db.collection('orders').doc(orderId).get();
+        if (!orderDoc.exists) {
+          alert("الطلب غير موجود");
+          return;
+        }
+
+        const order = orderDoc.data();
+        const items = [...order.items];
+        
+        // التحقق إذا كان الصنف موجود بالفعل في الطلب
+        const existingItemIndex = items.findIndex(item => item.id === productId);
+        
+        if (existingItemIndex >= 0) {
+          // إذا كان الصنف موجود نزيد الكمية فقط
+          const currentQuantity = items[existingItemIndex].quantity;
+          const newTotalQuantity = currentQuantity + quantity;
+          
+          // التحقق مرة أخرى من توفر المخزون للكمية الإجمالية
+          const stockCheckTotal = await checkStockAvailability(productId, newTotalQuantity, currentQuantity);
+          if (!stockCheckTotal.available) {
+            alert(stockCheckTotal.message);
+            return;
+          }
+          
+          // تحديث المخزون للكمية الإضافية فقط
+          const stockUpdate = await updateProductStock(productId, quantity);
+          if (!stockUpdate.success) {
+            alert(stockUpdate.message);
+            return;
+          }
+          
+          items[existingItemIndex].quantity = newTotalQuantity;
+        } else {
+          // إذا كان الصنف غير موجود نضيفه جديد
+          // تحديث المخزون للكمية الجديدة
+          const stockUpdate = await updateProductStock(productId, quantity);
+          if (!stockUpdate.success) {
+            alert(stockUpdate.message);
+            return;
+          }
+          
+          items.push({
+            id: productId,
+            name: productName,
+            price: productPrice,
+            quantity: quantity
+          });
+        }
+        
+        const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        await db.collection('orders').doc(orderId).update({
+          items: items,
+          total: newTotal,
+          lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert("تم إضافة الصنف إلى الطلب بنجاح");
+        hideAddItemForm(orderId);
+        
+        sendAdminNotification(
+          orderId, 
+          userId, 
+          userName, 
+          `قام بإضافة ${quantity} من "${productName}" إلى الطلب`
+        );
+      } catch (error) {
+        console.error("Error adding item to order: ", error);
+        alert("حدث خطأ أثناء إضافة الصنف إلى الطلب");
+      }
+    }
+
+    function sendAdminNotification(orderId, userId, userName, action) {
+      const notificationMessage = `العميل ${userName} - ${action} - الطلب ${orderId}`;
+      
+      db.collection('adminNotifications').add({
+        message: notificationMessage,
+        orderId: orderId,
+        userId: userId,
+        userName: userName,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        read: false,
+        type: 'order_update'
+      })
+      .then(() => {
+        console.log("تم إرسال الإشعار إلى الأدمن");
+      })
+      .catch(error => {
+        console.error("Error sending admin notification: ", error);
+      });
+    }
+
+    // جلب المنتجات المتاحة عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchAvailableProducts();
+      displayUserInfoAndData();
+    });
+  </script>
+
+
+<!-- شغل علي المكشوف  -->
+
+<script>
+  // التحقق من توفر المخزون قبل التعديل - مع دعم الشغل علي المكشوف
+async function checkStockAvailability(productId, requestedQuantity, currentQuantity = 0) {
+  try {
+    const productDoc = await db.collection("products").doc(productId).get();
+    
+    if (!productDoc.exists) {
+      return { available: false, message: "المنتج غير موجود" };
+    }
+    
+    const productData = productDoc.data();
+    const availableStock = productData.stock || 0;
+    const maxOrder = productData.maxOrder || 0;
+    const unlimitedStock = productData.unlimitedStock || false;
+    
+    // إذا كان المنتج يعمل "علي المكشوف"، نتجاهل فحص المخزون
+    if (unlimitedStock) {
+      return { 
+        available: true, 
+        productData: productData,
+        unlimitedStock: true 
+      };
+    }
+    
+    // حساب الكمية الفعلية المطلوبة (الفرق بين الكمية الجديدة والقديمة)
+    const actualRequestedQuantity = requestedQuantity - currentQuantity;
+    
+    // التحقق من توفر المخزون
+    if (availableStock < actualRequestedQuantity) {
+      return { 
+        available: false, 
+        message: `الكمية المطلوبة غير متوفرة. المتاح: ${availableStock} وحدة` 
+      };
+    }
+    
+    // التحقق من الحد الأقصى للطلب
+    if (maxOrder > 0 && requestedQuantity > maxOrder) {
+      return { 
+        available: false, 
+        message: `تجاوزت الحد الأقصى للطلب. الحد الأقصى: ${maxOrder} وحدة`
+      };
+    }
+    
+    return { 
+      available: true, 
+      productData: productData,
+      unlimitedStock: false 
+    };
+  } catch (error) {
+    console.error("Error checking stock availability:", error);
+    return { available: false, message: "حدث خطأ أثناء التحقق من المخزون" };
+  }
+}
+
+// تحديث المخزون بعد التعديل - مع دعم الشغل علي المكشوف
+async function updateProductStock(productId, quantityChange, unlimitedStock = false) {
+  // إذا كان المنتج يعمل "علي المكشوف"، لا نقوم بتحديث المخزون
+  if (unlimitedStock) {
+    return { success: true, message: "تم التحديث (الشغل علي المكشوف)" };
+  }
+  
+  try {
+    const productRef = db.collection("products").doc(productId);
+    
+    await db.runTransaction(async (transaction) => {
+      const productDoc = await transaction.get(productRef);
+      
+      if (!productDoc.exists) {
+        throw new Error("المنتج غير موجود");
+      }
+      
+      const productData = productDoc.data();
+      const currentStock = productData.stock || 0;
+      const newStock = currentStock - quantityChange;
+      
+      if (newStock < 0) {
+        throw new Error("الكمية المطلوبة غير متوفرة في المخزون");
+      }
+      
+      transaction.update(productRef, { stock: newStock });
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating product stock:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+// تحديث كمية المنتج في الطلب - مع دعم الشغل علي المكشوف
+async function updateItemQuantity(orderId, itemIndex, productId, productName, productPrice, userId, userName) {
+  const newQuantity = parseInt(document.getElementById(`item-quantity-${orderId}-${itemIndex}`).value);
+  
+  if (isNaN(newQuantity) || newQuantity < 1) {
+    Swal.fire({
+      icon: 'error',
+      title: 'خطأ في الكمية',
+      text: 'الكمية يجب أن تكون رقم صحيح أكبر من الصفر',
+      confirmButtonText: 'حسناً'
+    });
+    return;
+  }
+
+  try {
+    // جلب بيانات الطلب الحالية
+    const orderDoc = await db.collection('orders').doc(orderId).get();
+    if (!orderDoc.exists) {
+      alert("الطلب غير موجود");
+      return;
+    }
+
+    const order = orderDoc.data();
+    const currentItem = order.items[itemIndex];
+    const currentQuantity = currentItem.quantity;
+
+    // التحقق من توفر المخزون (مع دعم الشغل علي المكشوف)
+    const stockCheck = await checkStockAvailability(productId, newQuantity, currentQuantity);
+    if (!stockCheck.available) {
+      alert(stockCheck.message);
+      return;
+    }
+
+    // حساب الفرق في الكمية لتحديث المخزون
+    const quantityDifference = newQuantity - currentQuantity;
+
+    // تحديث المخزون (مع دعم الشغل علي المكشوف)
+    const stockUpdate = await updateProductStock(productId, quantityDifference, stockCheck.unlimitedStock);
+    if (!stockUpdate.success) {
+      alert(stockUpdate.message);
+      return;
+    }
+
+    // تحديث الطلب
+    const items = [...order.items];
+    items[itemIndex].quantity = newQuantity;
+    
+    const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    await db.collection('orders').doc(orderId).update({
+      items: items,
+      total: newTotal,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    Swal.fire('تم الحفظ!', 'تم حفظ التعديلات بنجاح.', 'success');
+    hideEditItemForm(orderId, itemIndex);
+    
+    sendAdminNotification(
+      orderId, 
+      userId, 
+      userName, 
+      `قام بتعديل كمية "${productName}" من ${currentQuantity} إلى ${newQuantity}`
+    );
+  } catch (error) {
+    console.error("Error updating item quantity: ", error);
+    alert("حدث خطأ أثناء تحديث الكمية");
+  }
+}
+
+// حذف منتج من الطلب - مع دعم الشغل علي المكشوف
+async function removeItemFromOrder(orderId, itemIndex, productName, userId, userName) {
+  if (!confirm(`هل أنت متأكد من حذف "${productName}" من الطلب؟`)) {
+    return;
+  }
+
+  try {
+    // جلب بيانات الطلب الحالية
+    const orderDoc = await db.collection('orders').doc(orderId).get();
+    if (!orderDoc.exists) {
+      alert("الطلب غير موجود");
+      return;
+    }
+
+    const order = orderDoc.data();
+    const items = [...order.items];
+    const removedItem = items.splice(itemIndex, 1)[0];
+    
+    // التحقق من إعداد الشغل علي المكشوف قبل إرجاع المخزون
+    const productDoc = await db.collection("products").doc(removedItem.id).get();
+    const unlimitedStock = productDoc.exists ? (productDoc.data().unlimitedStock || false) : false;
+    
+    // إرجاع الكمية المحذوفة إلى المخزون فقط إذا لم يكن المنتج يعمل "علي المكشوف"
+    if (!unlimitedStock) {
+      const stockUpdate = await updateProductStock(removedItem.id, -removedItem.quantity);
+      if (!stockUpdate.success) {
+        alert(stockUpdate.message);
+        return;
+      }
+    }
+
+    const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    if (items.length === 0) {
+      await db.collection('orders').doc(orderId).update({
+        status: 'ملغي',
+        items: items,
+        total: newTotal,
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+        cancellationReason: 'تم حذف جميع الأصناف'
+      });
+    } else {
+      await db.collection('orders').doc(orderId).update({
+        items: items,
+        total: newTotal,
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    alert("تم حذف الصنف من الطلب");
+    
+    sendAdminNotification(
+      orderId, 
+      userId, 
+      userName, 
+      `قام بحذف "${productName}" من الطلب ${unlimitedStock ? '' : `وتم إرجاع ${removedItem.quantity} وحدة للمخزون`}`
+    );
+  } catch (error) {
+    console.error("Error removing item: ", error);
+    alert("حدث خطأ أثناء حذف الصنف");
+  }
+}
+
+// إضافة منتج جديد للطلب - مع دعم الشغل علي المكشوف
+async function addItemToOrder(orderId, userId, userName) {
+  const productSelect = document.getElementById(`new-item-product-${orderId}`);
+  const productId = productSelect.value;
+  const productOption = productSelect.options[productSelect.selectedIndex];
+  const productName = productOption.text.split(' - ')[0];
+  const productPrice = parseFloat(productOption.getAttribute('data-price'));
+  const quantity = parseInt(document.getElementById(`new-item-quantity-${orderId}`).value);
+
+  if (isNaN(quantity) || quantity < 1) {
+    alert("الكمية يجب أن تكون رقم صحيح أكبر من الصفر");
+    return;
+  }
+
+  try {
+    // التحقق من توفر المخزون (مع دعم الشغل علي المكشوف)
+    const stockCheck = await checkStockAvailability(productId, quantity);
+    if (!stockCheck.available) {
+      alert(stockCheck.message);
+      return;
+    }
+
+    // جلب بيانات الطلب الحالية
+    const orderDoc = await db.collection('orders').doc(orderId).get();
+    if (!orderDoc.exists) {
+      alert("الطلب غير موجود");
+      return;
+    }
+
+    const order = orderDoc.data();
+    const items = [...order.items];
+    
+    // التحقق إذا كان الصنف موجود بالفعل في الطلب
+    const existingItemIndex = items.findIndex(item => item.id === productId);
+    
+    if (existingItemIndex >= 0) {
+      // إذا كان الصنف موجود نزيد الكمية فقط
+      const currentQuantity = items[existingItemIndex].quantity;
+      const newTotalQuantity = currentQuantity + quantity;
+      
+      // التحقق مرة أخرى من توفر المخزون للكمية الإجمالية
+      const stockCheckTotal = await checkStockAvailability(productId, newTotalQuantity, currentQuantity);
+      if (!stockCheckTotal.available) {
+        alert(stockCheckTotal.message);
+        return;
+      }
+      
+      // تحديث المخزون للكمية الإضافية فقط (مع دعم الشغل علي المكشوف)
+      const stockUpdate = await updateProductStock(productId, quantity, stockCheckTotal.unlimitedStock);
+      if (!stockUpdate.success) {
+        alert(stockUpdate.message);
+        return;
+      }
+      
+      items[existingItemIndex].quantity = newTotalQuantity;
+    } else {
+      // إذا كان الصنف غير موجود نضيفه جديد
+      // تحديث المخزون للكمية الجديدة (مع دعم الشغل علي المكشوف)
+      const stockUpdate = await updateProductStock(productId, quantity, stockCheck.unlimitedStock);
+      if (!stockUpdate.success) {
+        alert(stockUpdate.message);
+        return;
+      }
+      
+      items.push({
+        id: productId,
+        name: productName,
+        price: productPrice,
+        quantity: quantity
+      });
+    }
+    
+    const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    
+    await db.collection('orders').doc(orderId).update({
+      items: items,
+      total: newTotal,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    alert("تم إضافة الصنف إلى الطلب بنجاح");
+    hideAddItemForm(orderId);
+    
+    sendAdminNotification(
+      orderId, 
+      userId, 
+      userName, 
+      `قام بإضافة ${quantity} من "${productName}" إلى الطلب`
+    );
+  } catch (error) {
+    console.error("Error adding item to order: ", error);
+    alert("حدث خطأ أثناء إضافة الصنف إلى الطلب");
+  }
+}
+</script>
+</body>
+</html>

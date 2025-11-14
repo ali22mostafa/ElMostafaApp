@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مصنعات المصطفى</title>
+
+  <!-- Swiper CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap" rel="stylesheet" />
+
+  <style>
+    .back-btn1 {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #0d47a1;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: background 0.3s ease;
+    }
+    .back-btn1:hover {
+      background-color: #1565c0;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: radial-gradient(circle at center, #1a1a1a, #000);
+      color: #fff;
+    }
+
+    header {
+      font-size: 48px;
+      font-weight: bold;
+       color: #ffcc00;
+      text-align: center;
+      text-shadow: 0 0 15px #00ffff, 0 0 30px #005050;
+      margin: 40px 0 20px;
+      animation: fadeInDown 1s ease-out forwards;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .swiper {
+      width: 90%;
+      max-width: 900px;
+      height: 450px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0,255,255,0.2);
+      margin: 0 auto 60px;
+      animation: fadeInUp 1.2s ease-out forwards;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .swiper-slide {
+      position: relative;
+    }
+
+    .swiper-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .swiper-slide:hover img {
+      transform: scale(1.05);
+    }
+
+    .swiper-button-next,
+    .swiper-button-prev {
+      color: #00ffff;
+      transition: 0.3s;
+    }
+
+    .swiper-button-next:hover,
+    .swiper-button-prev:hover {
+      color: #fff;
+    }
+
+    .swiper-pagination-bullet {
+      background: #00ffff;
+      opacity: 0.7;
+    }
+
+    .swiper-pagination-bullet-active {
+      background: #ffffff;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        font-size: 32px;
+      }
+
+      .swiper {
+        height: 300px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .swiper {
+        height: 220px;
+      }
+    }
+
+    /* سكشن تعرف على الشركة */
+    #about {
+      padding: 60px 20px;
+      background: linear-gradient(to right, #1f1f1f, #2c3e50);
+      color: #fff;
+    }
+
+    #about h2 {
+      text-align: center;
+      font-size: 36px;
+      color: #00ffff;
+      margin-bottom: 30px;
+    color: #ffcc00;
+    }
+
+    #about p {
+      font-size: 18px;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    #about p.highlight {
+      font-size: 22px;
+      font-weight: bold;
+      color: #ffcc00;
+      text-align: center;
+    }
+
+    #about p.center {
+      text-align: center;
+      color: #ffcc00;
+      font-size: 20px;
+    }
+
+    .dfhi {
+      font-size: 18px;
+      line-height: 1.8;
+      margin-bottom: 20px;
+      text-align: center;
+      padding: 20PX;
+       color: #ffcc00;
+    }
+    @media (max-width: 768px) {
+      #about h2 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<a href="index.html" class="back-btn1">← رجوع</a>
+
+<header>مصنعات المصطفى</header>
+     <p class="dfhi">✅ مرخصين من <strong>هيئة التنمية الصناعية</strong> – يعني شغل مضمون، نظيف، وعلى نور!</p>
+
+<div class="swiper mySwiper">
+  <div class="swiper-wrapper">
+    <div class="swiper-slide"><img src="img/5.jpeg" alt="صورة 1" /></div>
+    <div class="swiper-slide"><img src="img/5 - Copy.jpeg" alt="صورة 2" /></div>
+    <div class="swiper-slide"><img src="img/WhatsApp Image 2025-05-21 at 8.45.57 PM (7) - Copy.jpeg" alt="صورة 3" /></div>
+    <div class="swiper-slide"><img src="img/13.jpeg" alt="صورة 4" /></div>
+    <div class="swiper-slide"><img src="img/9.jpeg" alt="صورة 5" /></div>
+    <div class="swiper-slide"><img src="img/99.jpeg" alt="صورة 6" /></div>
+    <div class="swiper-slide"><img src="img/WhatsApp Image 2025-05-21 at 8.45.57 PM (18).jpeg" alt="صورة 7" /></div>
+    <div class="swiper-slide"><img src="img/999.jpeg" alt="صورة 8" /></div>
+    <div class="swiper-slide"><img src="img/hawa.jpeg" alt="صورة 9" /></div>
+    <div class="swiper-slide"><img src="img/aA.jpeg" alt="صورة 10" /></div>
+    <div class="swiper-slide"><img src="img/سجق 3.jpeg" alt="صورة 11" /></div>
+    <div class="swiper-slide"><img src="img/WhatsApp Image 2025-05-21 at 8.45.57 PM (2).jpeg" alt="صورة 12" /></div>
+  </div>
+
+  <div class="swiper-button-next"></div>
+  <div class="swiper-button-prev"></div>
+  <div class="swiper-pagination"></div>
+</div>
+
+<!-- ✅ سكشن تعرف على الشركة -->
+<section id="about">
+  <div style="max-width: 1000px; margin: auto;">
+    <h2>تعرف على الشركة</h2>
+
+    <p class="highlight">🎯 المصطفى… لحومك مضمونة وراحتك مضمونة 🥩</p>
+
+    <p>شركة <strong>المصطفى لتصنيع اللحوم</strong> تقدم لك منتجات لحوم مجمدة بجودة عالية، وتوصيل لحد باب بيتك 🚚.</p>
+
+    <p>سواء عندك <strong>مطعم، سوبر ماركت، أو شغال أونلاين</strong> وبتدور على لحوم ممتازة بأسعار منافسة... أو ست بيت بتحب تطبخ بحُب – إحنا هنا علشانك ❤️</p>
+
+    <p>✅ مرخصين من <strong>هيئة التنمية الصناعية</strong> – يعني شغل مضمون، نظيف، وعلى نور!</p>
+
+    <p>🔸 متوفر عندنا كل اللي محتاجه مشروعك:<br />
+    <strong>كبده – لحمة مفرومة – سجق – بفتيك – شاورما – حواوشي – كفتة مشوية على الفحم</strong></p>
+
+    <p>🔸 بنوزع منتجات شركات كبيرة زي:<br />
+    <strong>بسمة – أطياب – كوكي – وغيرهم</strong></p>
+
+    <p>📍 عندنا منافذ بيع وتوصيل حتى باب البيت!<br />
+    📌 مبادرة كلنا واحد – جسر السويس – أمام محطة مترو النزهة – بجوار نادي النخيل<br />
+    📞 <strong>01202211462</strong><br /><br />
+    📌 حدائق الأهرام – البوابة الثانية<br />
+    📞 <strong>01113801968</strong></p>
+
+    <p>🚚 بنغطي كل مناطق <strong>القاهرة الكبرى وضواحيها:</strong><br />
+    السلام، شبرا، العبور، الشروق، المستقبل، بدر، مدينة نصر، التجمع، وغيرها.</p>
+
+    <p>📌 العنوان الرئيسي: <strong>آخر شارع جمال عبد الناصر – الحرفيين – مدينة السلام</strong></p>
+
+    <p class="center">📞 عايز تشتغل صح؟ اتصل بينا على الرقم الرئيسي:<br />
+    <strong style="font-size: 24px;">01002685167</strong></p>
+
+    <p class="highlight">🛒 المصطفى… شريك النجاح لكل حد عايز يفرق في السوق</p>
+  </div>
+</section>
+
+<!-- ✅ Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+<script>
+  const swiper = new Swiper(".mySwiper", {
+    loop: true,
+    autoplay: {
+      delay: 900,
+      disableOnInteraction: false,
+    },
+    pagination: {
+      el: ".swiper-pagination",
+      clickable: true,
+    },
+    navigation: {
+      nextEl: ".swiper-button-next",
+      prevEl: ".swiper-button-prev",
+    },
+    slidesPerView: 1,
+  });
+</script>
+
+</body>
+</html>

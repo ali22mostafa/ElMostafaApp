@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تأكيد الطلب - شركة المصطفى</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #111;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    .logo {
+      display: block;
+      margin: 10px auto;
+      max-width: 220px;
+      border-radius: 20px;
+      animation: bounceIn 1s ease-out, pulse 2s 2s ease-in-out infinite;
+      transform-origin: center;
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .logo:hover {
+      transform: scale(1.05) rotate(2deg);
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    h1 {
+      color: yellow;
+      text-align: center;
+    }
+    .order-summary {
+      background-color: #222;
+      border: 1px solid yellow;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #444;
+    }
+    .customer-form {
+      background-color: #222;
+      border: 1px solid yellow;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: yellow;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      background-color: #333;
+      color: white;
+    }
+    .submit-btn {
+      background-color: yellow;
+      color: black;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 20px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .back-btn {
+      background-color: #444;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    .back-btn1 {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #0d47a1;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      z-index: 1000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: background 0.3s ease;
+    }
+
+    .back-btn1:hover {
+      background-color: #1565c0;
+    }
+  </style>
+    <style>
+    input,
+textarea,
+select {
+  font-size: 16px; /* يمنع الزوم على الموبايل */
+}
+
+  </style>
+
+
+<style>
+/* خط عربي أنيق */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+
+/* تنسيق التنبيه */
+.swal-responsive {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 16px;
+  border-radius: 10px;
+  padding: 10px;
+  width: 60% !important;
+  max-width: 60%!important;
+  box-sizing: border-box;
+}
+
+/* عنوان جذاب */
+.swal-title {
+  font-weight: bold;
+  font-size: 20px;
+  color: #d97706;
+}
+
+/* زر متجاوب */
+.swal-button {
+  background-color: #f59e0b !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-size: 15px !important;
+  padding: 10px 25px !important;
+  width:100%;
+  max-width: 100px;
+  margin: 0 auto;
+  display: block;
+}
+
+.swal-button:hover {
+  background-color: #d97706 !important;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+  
+  <header>
+    <img src="img/zz.jpg" alt="شعار الشركة" class="logo" />
+    <p style="text-align:center;">شركة المصطفى لتصنيع اللحوم وبيع جميع منتجات الشركات</p>
+  </header>
+ <a href="cart.html" class="back-btn1">← رجوع</a>
+  <div class="container">
+    <h1>تأكيد الطلب</h1>
+
+    <div class="order-summary">
+      <h2>ملخص الطلب</h2>
+      <div id="order-items"><!-- يتم ملؤه تلقائيًا --></div>
+      <div style="text-align: right; margin-top: 15px; font-weight: bold;">
+        الإجمالي: <span id="order-total">0</span> جنيهاً
+      </div>
+    </div>
+
+    <div class="customer-form">
+      <h2>معلومات العميل</h2>
+      <form id="customer-info-form">
+        <div class="form-group">
+          <label for="name">الاسم بالكامل*</label>
+          <input type="text" id="name" required>
+        </div>
+        <div class="form-group">
+          <label for="phone">رقم الهاتف*</label>
+          <input type="tel" id="phone" required>
+        </div>
+        <div class="form-group">
+          <label for="address">العنوان (اختياري)</label>
+          <textarea id="address" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="notes">ملاحظات إضافية (اختياري)</label>
+          <textarea id="notes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="submit-btn">تأكيد الطلب</button>
+        <button type="button" class="back-btn" onclick="window.location.href='cart.html'">العودة إلى السلة</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    // إعداد Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBKtxMNJ3n_YIsy671sbhlk8Qm1yt5uSB4",
+      authDomain: "mostafa-products.firebaseapp.com",
+      projectId: "mostafa-products",
+      storageBucket: "mostafa-products.firebasestorage.app",
+      messagingSenderId: "841270845665",
+      appId: "1:841270845665:web:f2f857112688b8b8be57a0"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // عرض محتويات الطلب
+    function displayOrderSummary() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const container = document.getElementById('order-items');
+      let total = 0;
+      container.innerHTML = '';
+
+      if (cart.length === 0) {
+        container.innerHTML = '<p>لا توجد عناصر في الطلب</p>';
+        document.getElementById('order-total').textContent = '0';
+        return;
+      }
+
+      cart.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'order-item';
+        itemDiv.innerHTML = `
+          <span>${item.name} (${item.quantity} × ${item.price} ج)</span>
+          <span>${(item.quantity * item.price).toFixed(2)} ج</span>
+        `;
+        container.appendChild(itemDiv);
+        total += item.quantity * item.price;
+      });
+
+      document.getElementById('order-total').textContent = total.toFixed(2);
+    }
+
+    // ملء بيانات المستخدم إذا كان مسجلاً دخول
+    function fillUserData() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        document.getElementById('name').value = user.name || '';
+        document.getElementById('phone').value = user.phone || '';
+        document.getElementById('address').value = user.address || '';
+      }
+    }
+
+    // إرسال الطلب إلى Firebase
+ function submitOrder(event) {
+  event.preventDefault();
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  if (cart.length === 0) {
+Swal.fire({
+  title: '⚠️ تنبيه',
+  text: 'سلة التسوق فارغة!',
+  icon: 'warning',
+  confirmButtonText: 'حسناً',
+  customClass: {
+    popup: 'swal-responsive',
+    title: 'swal-title',
+    confirmButton: 'swal-button'
+  }
+});
+
+
+
+    return;
+  }
+
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const address = document.getElementById('address').value.trim();
+  const notes = document.getElementById('notes').value.trim();
+
+  if (!name || !phone) {
+    alert('الرجاء إدخال الاسم ورقم الهاتف');
+    return;
+  }
+
+  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  // البحث عن طلب سابق لنفس الهاتف ولم يتم معالجته بعد
+  db.collection('orders')
+    .where('customerPhone', '==', phone)
+    .where('status', 'in', ['جديد', 'قيد المعالجة'])
+    .get()
+    .then(querySnapshot => {
+      if (querySnapshot.empty) {
+        // لا يوجد طلبات سابقة، إنشاء طلب جديد
+        createNewOrder(name, phone, address, notes, cart, total, user);
+      } else {
+        // يوجد طلب سابق، دمج الطلبات
+        mergeOrders(querySnapshot, name, phone, address, notes, cart, total, user);
+      }
+    })
+    .catch(error => {
+      console.error('Error checking for existing orders:', error);
+      // في حالة الخطأ، ننشئ طلباً جديداً
+      createNewOrder(name, phone, address, notes, cart, total, user);
+    });
+}
+
+function createNewOrder(name, phone, address, notes, cart, total, user) {
+  const order = {
+    customerName: name,
+    customerPhone: phone,
+    customerAddress: address || 'غير محدد',
+    notes: notes || 'لا توجد ملاحظات',
+    items: cart,
+    total: total,
+    status: 'جديد',
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    userId: user?.id || null
+  };
+
+  db.collection('orders').add(order)
+    .then(docRef => {
+      
+      localStorage.removeItem('cart');
+     
+    })
+    .catch(error => {
+      console.error('Error adding order:', error);
+      alert('حدث خطأ أثناء حفظ الطلب، يرجى المحاولة مرة أخرى');
+    });
+}
+
+function mergeOrders(querySnapshot, name, phone, address, notes, newCart, newTotal, user) {
+  // نأخذ أول طلب غير مكتمل (يجب أن يكون واحد فقط في الوضع الطبيعي)
+  const existingOrder = querySnapshot.docs[0];
+  const existingData = existingOrder.data();
+  
+  // دمج العناصر
+  const mergedItems = [...existingData.items];
+  
+  newCart.forEach(newItem => {
+    const existingItemIndex = mergedItems.findIndex(item => item.id === newItem.id);
+    if (existingItemIndex >= 0) {
+      // إذا كان المنتج موجوداً بالفعل، نزيد الكمية
+      mergedItems[existingItemIndex].quantity += newItem.quantity;
+    } else {
+      // إذا كان منتجاً جديداً، نضيفه
+      mergedItems.push(newItem);
+    }
+  });
+  
+  // حساب الإجمالي الجديد
+  const mergedTotal = existingData.total + newTotal;
+  
+  // تحديث الطلب الحالي
+  existingOrder.ref.update({
+    items: mergedItems,
+    total: mergedTotal,
+    customerName: name, // تحديث الاسم إذا تغير
+    customerAddress: address || existingData.customerAddress,
+    notes: notes || existingData.notes,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp() // تحديث الوقت
+  })
+  .then(() => {
+    
+    localStorage.removeItem('cart');
+    
+  })
+  .catch(error => {
+    console.error('Error updating order:', error);
+    alert('حدث خطأ أثناء تحديث الطلب، يرجى المحاولة مرة أخرى');
+  });
+}
+    // تهيئة الصفحة
+    document.addEventListener('DOMContentLoaded', () => {
+      displayOrderSummary();
+      fillUserData();
+      document.getElementById('customer-info-form').addEventListener('submit', submitOrder);
+    });
+  </script>
+
+
+
+
+<script>
+// 
+// في ملف checkout.html، قم بتعديل دالة deductStockFromFirebase
+function deductStockFromFirebase(cartItems) {
+  const batch = db.batch();
+  const updatePromises = [];
+  
+  cartItems.forEach(item => {
+    const productRef = db.collection("products").doc(item.id);
+    updatePromises.push(
+      productRef.get().then(doc => {
+        if (doc.exists) {
+          const productData = doc.data();
+          
+          // إذا كان المنتج عليه "الشغل علي المكشوف"، لا نخصم من المخزون
+          if (productData.unlimitedStock) {
+            console.log(`♾️ المنتج ${item.name} عليه الشغل علي المكشوف - لم يتم خصم المخزون`);
+            return;
+          }
+          
+          const currentStock = productData.stock || 0;
+          const newStock = currentStock - item.quantity;
+          
+          if (newStock < 0) {
+            throw new Error(`لا يوجد مخزون كافي للمنتج: ${item.name}`);
+          }
+          
+          batch.update(productRef, { stock: newStock });
+          console.log(`خصم ${item.quantity} من مخزون ${item.name}. المخزون الجديد: ${newStock}`);
+        }
+      })
+    );
+  });
+  
+  return Promise.all(updatePromises)
+    .then(() => batch.commit())
+    .then(() => {
+      console.log("تم خصم المخزون بنجاح");
+      return true;
+    })
+    .catch(error => {
+      console.error("فشل في خصم المخزون:", error);
+      throw error;
+    });
+}
+// 
+function submitOrder(event) {
+  event.preventDefault();
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  if (cart.length === 0) {
+    Swal.fire({
+      title: '⚠️ تنبيه',
+      text: 'سلة التسوق فارغة!',
+      icon: 'warning',
+      confirmButtonText: 'حسناً',
+      customClass: {
+        popup: 'swal-responsive',
+        title: 'swal-title',
+        confirmButton: 'swal-button'
+      }
+    });
+    return;
+  }
+
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const address = document.getElementById('address').value.trim();
+  const notes = document.getElementById('notes').value.trim();
+
+  if (!name || !phone) {
+    alert('الرجاء إدخال الاسم ورقم الهاتف');
+    return;
+  }
+
+  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  // البحث عن طلب سابق لنفس الهاتف ولم يتم معالجته بعد
+  db.collection('orders')
+    .where('customerPhone', '==', phone)
+    .where('status', 'in', ['جديد', 'قيد المعالجة'])
+    .get()
+    .then(querySnapshot => {
+      if (querySnapshot.empty) {
+        // لا يوجد طلبات سابقة، إنشاء طلب جديد بعد خصم المخزون
+        deductStockFromFirebase(cart)
+          .then(() => createNewOrder(name, phone, address, notes, cart, total, user))
+          .catch(error => {
+            console.error('Error deducting stock:', error);
+            alert('حدث خطأ أثناء معالجة الطلب: ' + error.message);
+          });
+      } else {
+        // يوجد طلب سابق، دمج الطلبات بعد خصم المخزون
+        deductStockFromFirebase(cart)
+          .then(() => mergeOrders(querySnapshot, name, phone, address, notes, cart, total, user))
+          .catch(error => {
+            console.error('Error deducting stock:', error);
+            alert('حدث خطأ أثناء معالجة الطلب: ' + error.message);
+          });
+      }
+    })
+    .catch(error => {
+      console.error('Error checking for existing orders:', error);
+      // في حالة الخطأ، ننشئ طلباً جديداً بعد خصم المخزون
+      deductStockFromFirebase(cart)
+        .then(() => createNewOrder(name, phone, address, notes, cart, total, user))
+        .catch(error => {
+          console.error('Error deducting stock:', error);
+          alert('حدث خطأ أثناء معالجة الطلب: ' + error.message);
+        });
+    });
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+// دالة للتحقق من الطلبات السابقة غير المكتملة
+function checkPendingOrders(phone, cartItems) {
+  return db.collection('orders')
+    .where('customerPhone', '==', phone)
+    .where('status', 'in', ['جديد', 'قيد المعالجة'])
+    .get()
+    .then(querySnapshot => {
+      const pendingItems = {};
+      
+      // جمع كل المنتجات في الطلبات السابقة
+      querySnapshot.forEach(doc => {
+        const orderData = doc.data();
+        orderData.items.forEach(item => {
+          if (!pendingItems[item.id]) {
+            pendingItems[item.id] = 0;
+          }
+          pendingItems[item.id] += item.quantity;
+        });
+      });
+      
+      // التحقق من عدم تجاوز الحد الأقصى مع الطلبات السابقة
+      const promises = [];
+      cartItems.forEach(item => {
+        const promise = db.collection("products").doc(item.id).get()
+          .then(productDoc => {
+            if (productDoc.exists) {
+              const productData = productDoc.data();
+              const totalRequested = (pendingItems[item.id] || 0) + item.quantity;
+              
+              if (productData.maxOrder > 0 && totalRequested > productData.maxOrder) {
+                throw new Error(`لقد تجاوزت الحد الأقصى للطلب من ${item.name}. الحد الأقصى المسموح: ${productData.maxOrder} وحدة (لديك ${pendingItems[item.id] || 0} وحدة في الطلبات السابقة)`);
+              }
+            }
+          });
+        promises.push(promise);
+      });
+      
+      return Promise.all(promises);
+    });
+}
+
+function submitOrder(event) {
+  event.preventDefault();
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  if (cart.length === 0) {
+    Swal.fire({
+      title: '⚠️ تنبيه',
+      text: 'سلة التسوق فارغة!',
+      icon: 'warning',
+      confirmButtonText: 'حسناً',
+      customClass: {
+        popup: 'swal-responsive',
+        title: 'swal-title',
+        confirmButton: 'swal-button'
+      }
+    });
+    return;
+  }
+
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const address = document.getElementById('address').value.trim();
+  const notes = document.getElementById('notes').value.trim();
+
+  if (!name || !phone) {
+    alert('الرجاء إدخال الاسم ورقم الهاتف');
+    return;
+  }
+
+  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  // التحقق من الطلبات السابقة أولاً
+  checkPendingOrders(phone, cart)
+    .then(() => {
+      // البحث عن طلب سابق لنفس الهاتف ولم يتم معالجته بعد
+      return db.collection('orders')
+        .where('customerPhone', '==', phone)
+        .where('status', 'in', ['جديد', 'قيد المعالجة'])
+        .get();
+    })
+    .then(querySnapshot => {
+      if (querySnapshot.empty) {
+        // لا يوجد طلبات سابقة، إنشاء طلب جديد بعد خصم المخزون
+        return deductStockFromFirebase(cart)
+          .then(() => createNewOrder(name, phone, address, notes, cart, total, user));
+      } else {
+        // يوجد طلب سابق، دمج الطلبات بعد خصم المخزون
+        return deductStockFromFirebase(cart)
+          .then(() => mergeOrders(querySnapshot, name, phone, address, notes, cart, total, user));
+      }
+      
+    })
+    .then(orderId => {
+      
+      Swal.fire({
+  icon: 'success',
+  title: 'تم الحفظ  بنجاح.',
+  showConfirmButton: true,
+  
+}).then(() => {
+  // بعد انتهاء الرسالة، روح للصفحة الرئيسية
+  window.location.href = 'index.html';
+});
+
+      localStorage.removeItem('cart');
+      
+    })
+    .catch(error => {
+      console.error('Error processing order:', error);
+      Swal.fire({
+        title: '❌ خطأ',
+        text: error.message || 'حدث خطأ أثناء معالجة الطلب، يرجى المحاولة مرة أخرى',
+        icon: 'error',
+        confirmButtonText: 'حسناً',
+        customClass: {
+          popup: 'swal-responsive',
+          title: 'swal-title',
+          confirmButton: 'swal-button'
+        }
+      });
+    });
+}
+</script>
+</body>
+</html>

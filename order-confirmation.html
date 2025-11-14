@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تم تأكيد الطلب - شركة المصطفى</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #111;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    .logo {
+      display: block;
+      margin: 10px auto;
+      max-width: 220px;
+      border-radius: 20px;
+      animation: bounceIn 1s ease-out, pulse 2s 2s ease-in-out infinite;
+      transform-origin: center;
+      transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .logo:hover {
+      transform: scale(1.05) rotate(2deg);
+    }
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    h1 {
+      color: yellow;
+    }
+    .confirmation-box {
+      background-color: #222;
+      border: 2px solid yellow;
+      border-radius: 10px;
+      padding: 30px;
+      margin: 30px 0;
+    }
+    .order-number {
+      font-size: 24px;
+      color: yellow;
+      margin: 20px 0;
+    }
+    .home-btn {
+      background-color: yellow;
+      color: black;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 20px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="img/zz.jpg" alt="شعار الشركة" class="logo" />
+    <p>شركة المصطفى لتصنيع اللحوم وبيع جميع منتجات الشركات</p>
+  </header>
+
+  <div class="container">
+    <div class="confirmation-box">
+      <h1>شكراً لك!</h1>
+      <p>تم استلام طلبك بنجاح وسيتم معالجته في أقرب وقت ممكن</p>
+      
+      <p>سيتم التواصل معك على رقم الهاتف الذي قدمته لتأكيد التفاصيل</p>
+    </div>
+     <div class="order-number" style="display: none;">
+        رقم الطلب: <span id="order-id"></span>
+      </div>
+    
+    <a href="index.html" class="home-btn">العودة إلى الصفحة الرئيسية</a>
+  </div>
+
+  <script>
+    // عرض رقم الطلب
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderId = urlParams.get('id');
+      document.getElementById('order-id').textContent = orderId || 'غير معروف';
+    });
+  </script>
+</body>
+</html>
