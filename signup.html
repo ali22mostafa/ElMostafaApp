@@ -167,7 +167,7 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div style="display: none;"  class="form-group">
           <label>الموقع الجغرافي*</label>
           <button type="button" class="submit-btn" onclick="getLocation()">📍 احصل على موقعي</button>
           <p id="location-status"></p>
@@ -281,8 +281,7 @@
       errorDiv.textContent = "";
 
       if (!userLatitude || !userLongitude) {
-        errorDiv.textContent = 'يرجى تحديد الموقع أولاً بالضغط على زر "احصل على موقعي".';
-        return;
+        
       }
 
       try {
@@ -320,4 +319,5 @@
     });
   </script>
 </body>
+
 </html>
