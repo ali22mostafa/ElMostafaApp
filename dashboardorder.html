@@ -756,7 +756,7 @@
       
       <p><b>رقم الطلب:</b> ${order.id}</p>
       <p><b>التاريخ:</b> ${order.formattedDate}</p>
-      <p><b>العميل:</b> ${order.customerName}</p>
+       <p style="font-size: 22px !important;"><b>العميل:</b> ${order.customerName}</p>
       <p><b>الهاتف:</b> ${order.customerPhone}</p>
       <p><b>العنوان:</b> ${order.customerAddress}</p>
 
@@ -764,16 +764,18 @@
       <table>
         <thead>
           <tr>
+          <th>الكمية</th>
             <th>الصنف</th>
-            <th>الكمية</th>
+            
             
           </tr>
         </thead>
         <tbody>
           ${order.items.map(item => `
             <tr>
+            <td>${item.quantity}</td>
               <td>${item.name}</td>
-              <td>${item.quantity}</td>
+              
              
             </tr>
           `).join('')}
@@ -1211,4 +1213,5 @@ async function calculateDailyProfit() {
   <!-- مكتبة SheetJS لتصدير Excel -->
   <script src="https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js"></script>
 </body>
+
 </html>
