@@ -247,7 +247,7 @@ tr:hover {
     margin-bottom: 5px;
   }
   td:nth-of-type(3)::before {
-    content: "الموقع: ";
+    content: "الباسورد: ";
     font-weight: bold;
     color: yellow;
     display: block;
@@ -332,6 +332,7 @@ tr:hover {
           <tr>
             <th>الاسم</th>
             <th>رقم الهاتف</th>
+            <th>الباسورد </th>
             <th>الموقع</th>
           </tr>
         </thead>
@@ -398,6 +399,7 @@ tr:hover {
             id: userDoc.id,
             name: userData.name || "غير معروف",
             phone: userData.phone || "غير متوفر",
+             password: userData.password || "غير متوفر",
             location: userData.location || null,
           });
         });
@@ -442,6 +444,7 @@ tr:hover {
           tr.innerHTML = `
             <td>${customer.name}</td>
             <td>${customer.phone}</td>
+            <td>${customer.password}</td>
           `;
 
           tr.appendChild(mapCell);
@@ -485,3 +488,4 @@ tr:hover {
   </script>
 </body>
 </html>
+
