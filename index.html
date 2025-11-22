@@ -1656,34 +1656,45 @@ class ProductManager {
 }
 
 
-    async loadProductsFromFirebase() {
-        if (this.isUpdating) return;
-        this.isUpdating = true;
+   async loadProductsFromFirebase() {
+    if (this.isUpdating) return;
+    this.isUpdating = true;
 
-        console.log("📥 جلب البيانات من Firebase...");
+    console.log("📥 محاولة تحميل البيانات من Cache أولاً...");
+
+    try {
+        let snapshot;
+
+        // 1️⃣ محاولة التحميل من الكاش
         try {
-            const snapshot = await db.collection("products").get();
-            this.products.clear();
-
-            let loadedCount = 0;
-            snapshot.forEach(doc => {
-                this.products.set(doc.id, doc.data());
-                loadedCount++;
-                // تحديث المنتج مباشرة في الواجهة
-                this.updateProductInUI(doc.id, doc.data());
-            });
-
-            this.lastUpdate = Date.now();
-            console.log(`✅ تم تحميل ${loadedCount} منتج بنجاح من Firebase`);
-            this.saveToCache();
-
-        } catch (error) {
-            console.error("❌ فشل في جلب المنتجات:", error);
-            this.loadFromCache(); // fallback
-        } finally {
-            this.isUpdating = false;
+            snapshot = await db.collection("products").get({ source: "cache" });
+            console.log("📦 تم التحميل من Cache");
+        } catch {
+            console.log("❌ الكاش فارغ — تحميل من السيرفر...");
+            snapshot = await db.collection("products").get({ source: "server" });
         }
+
+        this.products.clear();
+        let loadedCount = 0;
+
+        snapshot.forEach(doc => {
+            this.products.set(doc.id, doc.data());
+            loadedCount++;
+            this.updateProductInUI(doc.id, doc.data());
+        });
+
+        this.lastUpdate = Date.now();
+        this.saveToCache();
+
+        console.log(`✅ تم تحميل ${loadedCount} منتج (Cache/Server)`);
+
+    } catch (error) {
+        console.error("❌ فشل في تحميل المنتجات:", error);
+        this.loadFromCache();
+    } finally {
+        this.isUpdating = false;
     }
+}
 
     updateProductInUI(productId, productData) {
         const element = document.querySelector(`[data-product-id="${productId}"]`);
