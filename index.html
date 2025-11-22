@@ -1660,18 +1660,37 @@ class ProductManager {
     if (this.isUpdating) return;
     this.isUpdating = true;
 
-    console.log("📥 محاولة تحميل البيانات من Cache أولاً...");
+    console.log("📥 جلب البيانات من Firebase...");
 
     try {
         let snapshot;
+        let source = "";
 
-        // 1️⃣ محاولة التحميل من الكاش
-        try {
-            snapshot = await db.collection("products").get({ source: "cache" });
-            console.log("📦 تم التحميل من Cache");
-        } catch {
-            console.log("❌ الكاش فارغ — تحميل من السيرفر...");
-            snapshot = await db.collection("products").get({ source: "server" });
+        // ⭐ ⭐ ⭐ التغيير هنا: تحقق إذا الكاش فارغ أو منتهي
+        const shouldLoadFromServer = this.products.size === 0 || this.cacheExpired;
+
+        if (shouldLoadFromServer) {
+            // إذا الكاش فارغ أو منتهي - روح للسيرفر مباشرة
+            try {
+                snapshot = await db.collection("products").get({ source: "server" });
+                source = "server";
+                console.log("📦 تم التحميل من السيرفر (الكاش فارغ/منتهي)");
+            } catch (serverError) {
+                console.log("❌ فشل السيرفر - تحميل من الكاش...");
+                snapshot = await db.collection("products").get({ source: "cache" });
+                source = "cache";
+            }
+        } else {
+            // إذا الكاش شغال - استخدم الكاش
+            try {
+                snapshot = await db.collection("products").get({ source: "cache" });
+                source = "cache";
+                console.log("📦 تم التحميل من Cache");
+            } catch {
+                snapshot = await db.collection("products").get({ source: "server" });
+                source = "server";
+                console.log("❌ الكاش فارغ — تحميل من السيرفر...");
+            }
         }
 
         this.products.clear();
@@ -1686,7 +1705,7 @@ class ProductManager {
         this.lastUpdate = Date.now();
         this.saveToCache();
 
-        console.log(`✅ تم تحميل ${loadedCount} منتج (Cache/Server)`);
+        console.log(`✅ تم تحميل ${loadedCount} منتج من ${source}`);
 
     } catch (error) {
         console.error("❌ فشل في تحميل المنتجات:", error);
@@ -1695,6 +1714,7 @@ class ProductManager {
         this.isUpdating = false;
     }
 }
+
 
     updateProductInUI(productId, productData) {
         const element = document.querySelector(`[data-product-id="${productId}"]`);
@@ -2260,6 +2280,7 @@ document.head.appendChild(style);
 </body>
 
 </html>
+
 
 
 
