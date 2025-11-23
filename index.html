@@ -1620,7 +1620,7 @@ class ProductManager {
     constructor() {
         this.products = new Map();
         this.lastUpdate = 0;
-        this.updateInterval = 6 * 60 * 60 * 1000; // 12 ساعة
+        this.updateInterval = 12 * 60 * 60 * 1000; // 12 ساعة
         this.isUpdating = false;
         this.initialLoadDone = false;
         this.cacheExpired = true;
@@ -2280,6 +2280,7 @@ document.head.appendChild(style);
 </body>
 
 </html>
+
 
 
 
