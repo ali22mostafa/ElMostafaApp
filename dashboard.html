@@ -142,7 +142,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script>
-const firebaseConfig = {
+  const firebaseConfig = {
   apiKey: "AIzaSyBKtxMNJ3n_YIsy671sbhlk8Qm1yt5uSB4",
   authDomain: "mostafa-products.firebaseapp.com",
   projectId: "mostafa-products",
@@ -172,15 +172,99 @@ function showAlert(msg, type = "success") {
 let allProducts = [];
 let allOffers = {};
 let filteredProducts = [];
-let currentFilter = "all"; // "all", "offers", "low-stock", "unavailable"
+let currentFilter = "all";
 
-// دالة لإنشاء معرف آمن للعناصر
 function createSafeId(id) {
   return id.replace(/[^a-zA-Z0-9-_]/g, '_');
 }
 
-async function loadProducts() {
+// ========== نظام الـ Cache مع localStorage ==========
+function updateProductLocally(productId, newData) {
+  const index = allProducts.findIndex(p => p.id === productId);
+  if (index !== -1) {
+    allProducts[index] = { ...allProducts[index], ...newData };
+    saveToLocalStorage();
+    applyFilterAndRender(); // ✅ رجعت
+    return true;
+  }
+  return false;
+}
+
+function deleteProductLocally(productId) {
+  allProducts = allProducts.filter(p => p.id !== productId);
+  delete allOffers[productId];
+  saveToLocalStorage();
+  applyFilterAndRender(); // ✅ رجعت
+}
+
+function addProductLocally(productData) {
+  allProducts.push(productData);
+  saveToLocalStorage();
+  applyFilterAndRender(); // ✅ رجعت
+}
+
+function updateOfferLocally(productId, isOffer) {
+  if (isOffer) {
+    allOffers[productId] = true;
+  } else {
+    delete allOffers[productId];
+  }
+  
+  const index = allProducts.findIndex(p => p.id === productId);
+  if (index !== -1) {
+    allProducts[index].isOffer = isOffer;
+    saveToLocalStorage();
+    applyFilterAndRender(); // ✅ رجعت
+  }
+}
+
+// ⭐ دالة لحفظ البيانات في localStorage
+function saveToLocalStorage() {
+  const cacheData = {
+    products: allProducts,
+    offers: allOffers,
+    timestamp: Date.now()
+  };
+  localStorage.setItem('productsCache', JSON.stringify(cacheData));
+}
+
+// ⭐ دالة لتحميل البيانات من localStorage
+function loadFromLocalStorage() {
+  const cached = localStorage.getItem('productsCache');
+  if (!cached) return false;
+  
+  try {
+    const data = JSON.parse(cached);
+    allProducts = data.products || [];
+    allOffers = data.offers || {};
+    return true;
+  } catch (e) {
+    console.log('❌ مشكلة في تحميل الكاش المحلي');
+    return false;
+  }
+}
+
+// ⭐ دالة لمسح الكاش المحلي
+function clearLocalStorage() {
+  localStorage.removeItem('productsCache');
+}
+// ========== نهاية نظام الـ Cache ==========
+
+async function loadProducts(forceRefresh = false) {
   productsDiv.innerHTML = "جارٍ التحميل...";
+  
+  // ⭐ إذا كان فيه بيانات في localStorage ومش مفروض نعمل refresh قوي
+  if (!forceRefresh && loadFromLocalStorage()) {
+    applyFilterAndRender();
+    showAlert("✅ تم تحميل البيانات من الكاش المحلي");
+    
+    if (window.updateBulkUnlimitedButton) {
+      window.updateBulkUnlimitedButton();
+    }
+    return; // ⬅️ وقف هنا - مفيش داعي لتحميل من النت
+  }
+  
+  // ⭐ فقط إذا مفيش بيانات في localStorage أو مفروض نعمل refresh قوي
   try {
     const [productsSnapshot, offersSnapshot] = await Promise.all([
       db.collection("products").get(),
@@ -206,7 +290,15 @@ async function loadProducts() {
       });
     });
 
+    // ⭐ حفظ في localStorage
+    saveToLocalStorage();
+    
     applyFilterAndRender();
+    
+    if (window.updateBulkUnlimitedButton) {
+      window.updateBulkUnlimitedButton();
+    }
+    
   } catch (e) {
     showAlert("❌ فشل في تحميل المنتجات", "error");
     console.error(e);
@@ -214,7 +306,6 @@ async function loadProducts() {
 }
 
 function applyFilterAndRender() {
-  // طبق فلتر العرض
   if (currentFilter === "offers") {
     filteredProducts = allProducts.filter(p => p.isOffer);
   } else if (currentFilter === "low-stock") {
@@ -225,7 +316,6 @@ function applyFilterAndRender() {
     filteredProducts = [...allProducts];
   }
 
-  // طبق فلتر البحث
   const searchTerm = searchInput.value.trim().toLowerCase();
   if (searchTerm) {
     filteredProducts = filteredProducts.filter(p => p.name?.toLowerCase().includes(searchTerm));
@@ -248,7 +338,6 @@ function renderProducts(products) {
     const box = document.createElement("div");
     box.className = "product-box";
     
-    // إضافة شارة "غير متوفر" إذا كان المنتج غير متوفر
     if (!product.available) {
       const badge = document.createElement("div");
       badge.className = "availability-badge";
@@ -256,7 +345,6 @@ function renderProducts(products) {
       box.appendChild(badge);
     }
     
-    // إضافة شارة "مخزون غير محدود" إذا كان المنتج عليه "الشغل علي المكشوف"
     if (product.unlimitedStock) {
       const unlimitedBadge = document.createElement("div");
       unlimitedBadge.className = "unlimited-badge";
@@ -341,6 +429,7 @@ function renderProducts(products) {
         showAlert("❌ الاسم أو السعر أو الكمية غير صالحة", "error");
         return;
       }
+      
       try {
         await db.collection("products").doc(product.id).set({ 
           name: newName, 
@@ -351,8 +440,18 @@ function renderProducts(products) {
           available: newAvailable,
           unlimitedStock: newUnlimitedStock
         }, { merge: true });
+        
+        updateProductLocally(product.id, {
+          name: newName,
+          cost: newCost,
+          price: newPrice,
+          stock: newStock,
+          maxOrder: newMaxOrder,
+          available: newAvailable,
+          unlimitedStock: newUnlimitedStock
+        });
+        
         showAlert(`✅ تم تحديث المنتج (${product.id})`);
-        await loadProducts();
       } catch (e) {
         showAlert("❌ فشل في التحديث", "error");
         console.error(e);
@@ -363,10 +462,9 @@ function renderProducts(products) {
       if (confirm(`هل تريد حذف المنتج (${product.id})؟`)) {
         try {
           await db.collection("products").doc(product.id).delete();
-          // Also remove from offers if it exists there
           await db.collection("offers").doc(product.id).delete().catch(() => {});
+          deleteProductLocally(product.id);
           showAlert("✅ تم حذف المنتج");
-          await loadProducts();
         } catch (e) {
           showAlert("❌ فشل في الحذف", "error");
         }
@@ -382,8 +480,8 @@ function renderProducts(products) {
       }
       try {
         await db.collection("offers").doc(product.id).set({ name, price });
+        updateOfferLocally(product.id, true);
         showAlert("✅ تم إضافة المنتج إلى العروض");
-        await loadProducts();
       } catch (e) {
         showAlert("❌ فشل في إضافة العرض", "error");
         console.error(e);
@@ -393,8 +491,8 @@ function renderProducts(products) {
     removeOfferBtn.onclick = async () => {
       try {
         await db.collection("offers").doc(product.id).delete();
+        updateOfferLocally(product.id, false);
         showAlert("✅ تم حذف العرض من العروض");
-        await loadProducts();
       } catch (e) {
         showAlert("❌ فشل في حذف العرض", "error");
         console.error(e);
@@ -407,8 +505,8 @@ function renderProducts(products) {
         await db.collection("products").doc(product.id).set({ 
           available: newAvailability 
         }, { merge: true });
+        updateProductLocally(product.id, { available: newAvailability });
         showAlert(`✅ تم ${newAvailability ? 'تمكين' : 'تعطيل'} المنتج`);
-        await loadProducts();
       } catch (e) {
         showAlert("❌ فشل في تغيير حالة التوفر", "error");
         console.error(e);
@@ -421,8 +519,8 @@ function renderProducts(products) {
         await db.collection("products").doc(product.id).set({ 
           unlimitedStock: newUnlimitedStock 
         }, { merge: true });
+        updateProductLocally(product.id, { unlimitedStock: newUnlimitedStock });
         showAlert(`✅ تم ${newUnlimitedStock ? 'تفعيل' : 'إيقاف'} الشغل علي المكشوف`);
-        await loadProducts();
       } catch (e) {
         showAlert("❌ فشل في تغيير حالة المخزون", "error");
         console.error(e);
@@ -433,6 +531,7 @@ function renderProducts(products) {
   });
 }
 
+// البحث المباشر بدون Debounce
 searchInput.addEventListener("input", () => {
   applyFilterAndRender();
 });
@@ -462,13 +561,11 @@ showUnavailableBtn.onclick = () => {
 };
 
 function setActiveFilterButton() {
-  // إزالة النشاط من جميع الأزرار
   showAllBtn.classList.remove("active");
   showOffersBtn.classList.remove("active");
   showLowStockBtn.classList.remove("active");
   showUnavailableBtn.classList.remove("active");
   
-  // إضافة النشاط للزر المحدد
   if (currentFilter === "all") {
     showAllBtn.classList.add("active");
   } else if (currentFilter === "offers") {
@@ -505,6 +602,19 @@ async function addProduct() {
       available,
       unlimitedStock
     });
+    
+    addProductLocally({
+      id: id,
+      name: name,
+      cost: cost,
+      price: price,
+      stock: stock,
+      maxOrder: maxOrder,
+      available: available,
+      unlimitedStock: unlimitedStock,
+      isOffer: false
+    });
+    
     showAlert("✅ تم إضافة المنتج");
     document.getElementById("new-id").value = '';
     document.getElementById("new-name").value = '';
@@ -514,27 +624,45 @@ async function addProduct() {
     document.getElementById("new-max-order").value = '0';
     document.getElementById("new-available").checked = true;
     document.getElementById("new-unlimited-stock").checked = false;
-    loadProducts();
   } catch (e) {
     showAlert("❌ فشل في الإضافة", "error");
     console.error(e);
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  if (!user || user.phone !== "01021502941") {
-    alert("🔒 يجب تسجيل الدخول كمشرف لعرض هذه الصفحة");
-    window.location.href = "login.html";
-    return;
-  }
-  loadProducts();
-});
-</script>
+function addRefreshButton() {
+  const filterButtons = document.getElementById("filter-buttons");
+  
+  const refreshBtn = document.createElement("button");
+  refreshBtn.id = "refresh-btn";
+  refreshBtn.innerHTML = "🔄 تحديث البيانات";
+  refreshBtn.style.backgroundColor = "#17a2b8";
+  refreshBtn.style.color = "white";
+  refreshBtn.style.margin = "0 10px";
+  refreshBtn.style.padding = "10px 20px";
+  refreshBtn.style.fontSize = "15px";
+  refreshBtn.style.borderRadius = "8px";
+  refreshBtn.style.border = "none";
+  refreshBtn.style.cursor = "pointer";
+  refreshBtn.style.fontWeight = "bold";
+  
+  refreshBtn.onclick = async () => {
+    refreshBtn.disabled = true;
+    refreshBtn.innerHTML = "⏳ جاري التحديث...";
+    
+    // ⭐ مسح الكاش القديم أولاً
+    clearLocalStorage();
+    
+    // ⭐ تحميل بيانات جديدة من Firestore
+    await loadProducts(true);
+    refreshBtn.disabled = false;
+    refreshBtn.innerHTML = "🔄 تحديث البيانات";
+    showAlert("✅ تم تحديث البيانات من السيرفر");
+  };
+  
+  filterButtons.appendChild(refreshBtn);
+}
 
-
-<script>
-  // إضافة زر لتفعيل/إلغاء "الشغل علي المكشوف" لجميع المنتجات مرة واحدة
 function addBulkUnlimitedStockButton() {
   const filterButtons = document.getElementById("filter-buttons");
   
@@ -543,7 +671,7 @@ function addBulkUnlimitedStockButton() {
   bulkUnlimitedBtn.innerHTML = "♾️ جاري التحميل...";
   bulkUnlimitedBtn.style.backgroundColor = "#6c757d";
   bulkUnlimitedBtn.style.color = "white";
-  bulkUnlimitedBtn.style.margin = "20px 10px";
+  bulkUnlimitedBtn.style.margin = "0 10px";
   bulkUnlimitedBtn.style.padding = "10px 20px";
   bulkUnlimitedBtn.style.fontSize = "15px";
   bulkUnlimitedBtn.style.borderRadius = "8px";
@@ -551,8 +679,7 @@ function addBulkUnlimitedStockButton() {
   bulkUnlimitedBtn.style.cursor = "pointer";
   bulkUnlimitedBtn.style.fontWeight = "bold";
   
-  // دالة لتحديث نص الزر حسب الحالة الحالية
-  function updateButtonText() {
+  window.updateBulkUnlimitedButton = function() {
     if (!allProducts || allProducts.length === 0) {
       bulkUnlimitedBtn.innerHTML = "♾️ جاري التحميل...";
       bulkUnlimitedBtn.style.backgroundColor = "#6c757d";
@@ -571,14 +698,13 @@ function addBulkUnlimitedStockButton() {
     }
     
     bulkUnlimitedBtn.disabled = false;
-  }
+  };
   
   bulkUnlimitedBtn.onclick = async function() {
     if (!allProducts || allProducts.length === 0) return;
     
-    // تحديد الإجراء المطلوب بناء على الحالة الحالية
     const allUnlimited = allProducts.every(product => product.unlimitedStock);
-    const action = !allUnlimited; // عكس الحالة الحالية
+    const action = !allUnlimited;
     const actionText = action ? "تفعيل" : "إلغاء";
     
     if (!confirm(`هل تريد ${actionText} 'الشغل علي المكشوف' لجميع المنتجات؟`)) {
@@ -590,7 +716,6 @@ function addBulkUnlimitedStockButton() {
       bulkUnlimitedBtn.innerHTML = "⏳ جاري التحديث...";
       
       const batch = db.batch();
-      
       allProducts.forEach(product => {
         const productRef = db.collection("products").doc(product.id);
         batch.update(productRef, { unlimitedStock: action });
@@ -598,62 +723,24 @@ function addBulkUnlimitedStockButton() {
       
       await batch.commit();
       showAlert(`✅ تم ${actionText} الشغل علي المكشوف لجميع المنتجات`);
-      await loadProducts(); // هيحدث الزر تلقائياً بعد التحميل
+      
+      allProducts.forEach(product => {
+        updateProductLocally(product.id, { unlimitedStock: action });
+      });
+      
+      window.updateBulkUnlimitedButton();
+      
     } catch (e) {
       showAlert("❌ فشل في التحديث", "error");
       console.error(e);
       bulkUnlimitedBtn.disabled = false;
-      updateButtonText();
+      window.updateBulkUnlimitedButton();
     }
   };
-  
-  // حفظ المرجع للدالة علشان نستدعيها من أي مكان
-  window.updateBulkUnlimitedButton = updateButtonText;
   
   filterButtons.appendChild(bulkUnlimitedBtn);
 }
 
-// تعديل دالة loadProducts علشان تحدث الزر
-async function loadProducts() {
-  productsDiv.innerHTML = "جارٍ التحميل...";
-  try {
-    const [productsSnapshot, offersSnapshot] = await Promise.all([
-      db.collection("products").get(),
-      db.collection("offers").get()
-    ]);
-
-    allOffers = {};
-    offersSnapshot.forEach(doc => {
-      allOffers[doc.id] = true;
-    });
-
-    allProducts = [];
-    productsSnapshot.forEach(doc => {
-      const data = doc.data();
-      allProducts.push({ 
-        id: doc.id, 
-        ...data, 
-        isOffer: !!allOffers[doc.id],
-        available: data.available !== undefined ? data.available : true,
-        stock: data.stock !== undefined ? data.stock : 0,
-        maxOrder: data.maxOrder !== undefined ? data.maxOrder : 0,
-        unlimitedStock: data.unlimitedStock !== undefined ? data.unlimitedStock : false
-      });
-    });
-
-    applyFilterAndRender();
-    
-    // تحديث زر الشغل علي المكشوف بعد تحميل البيانات
-    if (window.updateBulkUnlimitedButton) {
-      window.updateBulkUnlimitedButton();
-    }
-  } catch (e) {
-    showAlert("❌ فشل في تحميل المنتجات", "error");
-    console.error(e);
-  }
-}
-
-// استدعاء الدالة بعد تحميل الصفحة
 document.addEventListener("DOMContentLoaded", () => {
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user || user.phone !== "01021502941") {
@@ -662,11 +749,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
   
-  // إضافة الزر أولاً علشان يظهر فوراً
   addBulkUnlimitedStockButton();
-  
-  // ثم تحميل البيانات
-  loadProducts();
+  addRefreshButton();
+  loadProducts(); // ⬅️ أول تحميل للصفحة
 });
 </script>
 </body>
