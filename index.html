@@ -1560,7 +1560,7 @@ body {
 
 <script>
   // =============================================
-// 🔥 الحل الجذري لمشكلة Firebase Reads مع إصلاح السلة
+// 🔥 نظام إدارة المنتجات مع التحديثات الذكية
 // =============================================
 
 // ✅ تكوين Firebase
@@ -1589,7 +1589,7 @@ db.enablePersistence()
     });
 
 // =============================================
-// 🛒 نظام السلة المحسن (مشغول 100%)
+// 🛒 نظام السلة المحسن
 // =============================================
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
@@ -1614,107 +1614,115 @@ function showAlert(productName) {
 }
 
 // =============================================
-// 📦 نظام المنتجات المحسن
+// 📦 نظام المنتجات المحسن (بدون 6 ساعات)
 // =============================================
 class ProductManager {
     constructor() {
         this.products = new Map();
         this.lastUpdate = 0;
-        this.updateInterval = 12 * 60 * 60 * 1000; // 12 ساعة
         this.isUpdating = false;
         this.initialLoadDone = false;
-        this.cacheExpired = true;
     }
 
     async initialize() {
-    console.log("🚀 بدء تحميل نظام المنتجات المحسن...");
-    
-    // تحميل الكاش أولاً
-    this.loadFromCache();
+        console.log("🚀 بدء تحميل نظام المنتجات...");
+        
+        // تحميل الكاش أولاً
+        this.loadFromCache();
 
-    // إعادة رسم المنتجات من الكاش فورًا
-    this.renderProductsFromCache();
+        // إعادة رسم المنتجات من الكاش فورًا
+        this.renderProductsFromCache();
 
-    // تحديد إذا الكاش قديم
-    this.cacheExpired = (Date.now() - this.lastUpdate) > this.updateInterval;
+        // جلب البيانات من Firebase إذا الكاش فارغ فقط
+        if (this.products.size === 0) {
+            await this.loadProductsFromFirebase();
+        }
 
-    // جلب البيانات من Firebase إذا الكاش فارغ أو قديم
-    if (this.products.size === 0 || this.cacheExpired) {
-        await this.loadProductsFromFirebase();
-    }
-
-    this.initialLoadDone = true;
-    console.log("✅ نظام المنتجات جاهز");
-
+        this.initialLoadDone = true;
+        console.log("✅ نظام المنتجات جاهز");
     }
 
     renderProductsFromCache() {
-    console.log("🔄 إعادة رسم المنتجات من الكاش...");
-    for (const [productId, productData] of this.products) {
-        this.updateProductInUI(productId, productData);
+        console.log("🔄 إعادة رسم المنتجات من الكاش...");
+        for (const [productId, productData] of this.products) {
+            this.updateProductInUI(productId, productData);
+        }
     }
-}
 
+    async loadProductsFromFirebase() {
+        if (this.isUpdating) return;
+        this.isUpdating = true;
 
-   async loadProductsFromFirebase() {
-    if (this.isUpdating) return;
-    this.isUpdating = true;
+        console.log("📥 جلب البيانات من Firebase...");
 
-    console.log("📥 جلب البيانات من Firebase...");
+        try {
+            let snapshot;
+            let source = "";
 
-    try {
-        let snapshot;
-        let source = "";
-
-        // ⭐ ⭐ ⭐ التغيير هنا: تحقق إذا الكاش فارغ أو منتهي
-        const shouldLoadFromServer = this.products.size === 0 || this.cacheExpired;
-
-        if (shouldLoadFromServer) {
-            // إذا الكاش فارغ أو منتهي - روح للسيرفر مباشرة
-            try {
-                snapshot = await db.collection("products").get({ source: "server" });
-                source = "server";
-                console.log("📦 تم التحميل من السيرفر (الكاش فارغ/منتهي)");
-            } catch (serverError) {
-                console.log("❌ فشل السيرفر - تحميل من الكاش...");
-                snapshot = await db.collection("products").get({ source: "cache" });
-                source = "cache";
-            }
-        } else {
-            // إذا الكاش شغال - استخدم الكاش
+            // محاولة التحميل من الكاش أولاً
             try {
                 snapshot = await db.collection("products").get({ source: "cache" });
                 source = "cache";
                 console.log("📦 تم التحميل من Cache");
             } catch {
+                // إذا الكاش فارغ - التحميل من السيرفر
                 snapshot = await db.collection("products").get({ source: "server" });
                 source = "server";
-                console.log("❌ الكاش فارغ — تحميل من السيرفر...");
+                console.log("📦 تم التحميل من السيرفر (الكاش فارغ)");
             }
+
+            this.products.clear();
+            let loadedCount = 0;
+
+            snapshot.forEach(doc => {
+                this.products.set(doc.id, doc.data());
+                loadedCount++;
+                this.updateProductInUI(doc.id, doc.data());
+            });
+
+            this.lastUpdate = Date.now();
+            this.saveToCache();
+
+            console.log(`✅ تم تحميل ${loadedCount} منتج من ${source}`);
+
+        } catch (error) {
+            console.error("❌ فشل في تحميل المنتجات:", error);
+        } finally {
+            this.isUpdating = false;
         }
-
-        this.products.clear();
-        let loadedCount = 0;
-
-        snapshot.forEach(doc => {
-            this.products.set(doc.id, doc.data());
-            loadedCount++;
-            this.updateProductInUI(doc.id, doc.data());
-        });
-
-        this.lastUpdate = Date.now();
-        this.saveToCache();
-
-        console.log(`✅ تم تحميل ${loadedCount} منتج من ${source}`);
-
-    } catch (error) {
-        console.error("❌ فشل في تحميل المنتجات:", error);
-        this.loadFromCache();
-    } finally {
-        this.isUpdating = false;
     }
-}
 
+    // ✅ دالة التحديث الإجباري من الفيربيز
+    async forceRefreshFromFirebase() {
+        console.log("🔄 تحديث إجباري للمنتجات من Firebase...");
+        
+        this.isUpdating = true;
+        try {
+            // التحميل من السيرفر مباشرة
+            const snapshot = await db.collection("products").get({ source: "server" });
+            
+            this.products.clear();
+            let loadedCount = 0;
+
+            snapshot.forEach(doc => {
+                this.products.set(doc.id, doc.data());
+                loadedCount++;
+                this.updateProductInUI(doc.id, doc.data());
+            });
+
+            this.lastUpdate = Date.now();
+            this.saveToCache();
+
+            console.log(`✅ تم التحديث الإجباري لـ ${loadedCount} منتج`);
+            return true;
+            
+        } catch (error) {
+            console.error("❌ فشل في التحديث الإجباري:", error);
+            return false;
+        } finally {
+            this.isUpdating = false;
+        }
+    }
 
     updateProductInUI(productId, productData) {
         const element = document.querySelector(`[data-product-id="${productId}"]`);
@@ -1741,17 +1749,21 @@ class ProductManager {
             timestamp: this.lastUpdate
         };
         localStorage.setItem('products_cache', JSON.stringify(cacheData));
+        console.log("💾 تم حفظ البيانات في الكاش");
     }
 
     loadFromCache() {
         const cache = localStorage.getItem('products_cache');
-        if (!cache) return;
+        if (!cache) {
+            console.log("🔄 لا يوجد كاش - أول مرة");
+            return;
+        }
 
         try {
             const { data, timestamp } = JSON.parse(cache);
             this.products = new Map(data);
             this.lastUpdate = timestamp;
-            console.log("🔄 تم تحميل البيانات من التخزين المؤقت");
+            console.log("🔄 تم تحميل البيانات من الكاش");
         } catch (e) {
             console.error("❌ خطأ في تحميل البيانات المخزنة");
         }
@@ -1760,18 +1772,309 @@ class ProductManager {
     getProduct(productId) {
         return this.products.get(productId);
     }
+}
 
-    destroy() {
-        // تم الغاء onSnapshot، لا يوجد حاجة للتفكيك
+// =============================================
+// 🔄 نظام التحديثات الذكي (مقفول بالكامل)
+// =============================================
+
+class UpdateManager {
+    constructor() {
+        this.currentSystemVersion = 1;
+        this.userVersion = 1;
+        this.updateButton = null;
+        this.adminButton = null;
+        this.initialized = false;
+    }
+
+    async initialize() {
+        if (this.initialized) return;
+        
+        console.log("🔄 بدء نظام التحديثات الذكي...");
+        
+        // ✅ تهيئة الإصدارات أولاً
+        await this.initializeVersions();
+        
+        // إنشاء زر التحديث للمستخدم (مقفول)
+        this.createUpdateButton();
+        
+        // إنشاء زر الأدمن إذا كان مسؤول
+        this.createAdminButton();
+        
+        // التحقق من وجود تحديثات
+        await this.checkForUpdates();
+        
+        this.initialized = true;
+        console.log("✅ نظام التحديثات جاهز");
+    }
+
+    async initializeVersions() {
+        try {
+            // ✅ نجيب system version من الفيربيز أولاً
+            const updateDoc = await db.collection('system').doc('update').get();
+            const updateData = updateDoc.data();
+            
+            if (updateData && updateData.updateVersion) {
+                this.currentSystemVersion = updateData.updateVersion;
+                console.log(`📊 systemVersion من الفيربيز: ${this.currentSystemVersion}`);
+            }
+            
+            // ✅ الآن نحدد userVersion بناءً على system version
+            const storedVersion = localStorage.getItem('userUpdateVersion');
+            if (storedVersion) {
+                this.userVersion = parseInt(storedVersion);
+            } else {
+                // أول مرة - نخلي userVersion = systemVersion
+                this.userVersion = this.currentSystemVersion;
+                localStorage.setItem('userUpdateVersion', this.userVersion.toString());
+            }
+            
+            console.log(`🎯 التهيئة - system: ${this.currentSystemVersion}, user: ${this.userVersion}`);
+            
+        } catch (error) {
+            console.error("❌ خطأ في تهيئة الإصدار:", error);
+            // في حالة الخطأ، نخليهم متساويين
+            this.userVersion = this.currentSystemVersion;
+        }
+    }
+
+    createUpdateButton() {
+        if (!document.getElementById('force-update-btn')) {
+            const updateBtn = document.createElement('button');
+            updateBtn.id = 'force-update-btn';
+            updateBtn.innerHTML = '🔄 تحديث الأسعار';
+            updateBtn.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background: #ff9800;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-weight: bold;
+                cursor: pointer;
+                z-index: 9999;
+                box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+                display: none;
+                opacity: 0;
+                pointer-events: none;
+                transform: scale(0.8);
+                transition: all 0.3s ease;
+            `;
+            updateBtn.onclick = () => this.handleUserUpdate();
+            document.body.appendChild(updateBtn);
+            this.updateButton = updateBtn;
+            console.log("🚫 زر التحديث للمستخدم مقفول تماماً");
+        }
+    }
+
+    createAdminButton() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && (user.phone === "01021502941")) {
+            if (!document.getElementById('admin-update-btn')) {
+                const adminBtn = document.createElement('button');
+                adminBtn.id = 'admin-update-btn';
+                adminBtn.innerHTML = '🔥 فتح تحديث الأسعار للجميع';
+                adminBtn.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #ff0000;
+                    color: white;
+                    border: none;
+                    padding: 12px 16px;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    z-index: 9999;
+                    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
+                    font-size: 14px;
+                `;
+                adminBtn.onclick = () => this.adminForceUpdate();
+                document.body.appendChild(adminBtn);
+                this.adminButton = adminBtn;
+                console.log("👑 تم تحميل زر الأدمن");
+            }
+        }
+    }
+
+    async checkForUpdates() {
+        try {
+            console.log("🔍 التحقق من تحديثات الأسعار...");
+            
+            const updateDoc = await db.collection('system').doc('update').get();
+            const updateData = updateDoc.data();
+            
+            if (updateData && updateData.updateVersion) {
+                this.currentSystemVersion = updateData.updateVersion;
+                
+                console.log(`📊 المقارنة - system: ${this.currentSystemVersion}, user: ${this.userVersion}`);
+                console.log(`📊 النتيجة: ${this.userVersion} < ${this.currentSystemVersion} = ${this.userVersion < this.currentSystemVersion}`);
+                
+                // ✅ المقارنة الصحيحة
+                if (this.userVersion < this.currentSystemVersion) {
+                    this.showUpdateButton();
+                    console.log("🟡 يظهر زر التحديث - يحتاج تحديث");
+                } else {
+                    this.hideUpdateButton();
+                    console.log("🚫 لا يظهر زر التحديث - محدث بالفعل");
+                }
+            } else {
+                this.hideUpdateButton();
+                console.log("🚫 لا يوجد إعدادات تحديث في الفيربيز");
+            }
+        } catch (error) {
+            console.error("❌ خطأ في التحقق من التحديثات:", error);
+            this.hideUpdateButton();
+        }
+    }
+
+    showUpdateButton() {
+        if (this.updateButton) {
+            this.updateButton.style.display = 'block';
+            this.updateButton.style.opacity = '1';
+            this.updateButton.style.pointerEvents = 'auto';
+            this.updateButton.style.transform = 'scale(1)';
+            console.log("✅ فتح زر التحديث لهذا المستخدم");
+        }
+    }
+
+    hideUpdateButton() {
+        if (this.updateButton) {
+            this.updateButton.style.display = 'none';
+            this.updateButton.style.opacity = '0';
+            this.updateButton.style.pointerEvents = 'none';
+            this.updateButton.style.transform = 'scale(0.8)';
+            console.log("🚫 إقفال زر التحديث لهذا المستخدم");
+        }
+    }
+
+    async handleUserUpdate() {
+        console.log("✅ المستخدم طلب تحديث الأسعار...");
+        this.showLoading();
+        
+        try {
+            // 1. مسح كاش المنتجات والأسعار فقط
+            await this.clearProductsCache();
+            
+            // 2. إعادة تحميل المنتجات والأسعار من الفيربيز
+            const success = await productManager.forceRefreshFromFirebase();
+            
+            if (success) {
+                // 3. ✅ تحديث رقم الإصدار عند المستخدم
+                this.userVersion = this.currentSystemVersion;
+                localStorage.setItem('userUpdateVersion', this.userVersion.toString());
+                
+                // 4. إخفاء الزر
+                this.hideUpdateButton();
+                
+                // 5. إظهار رسالة نجاح
+                this.showSuccessMessage();
+                
+                console.log(`🎉 تم التحديث - userVersion أصبح: ${this.userVersion}`);
+            } else {
+                throw new Error('فشل في التحديث');
+            }
+            
+        } catch (error) {
+            console.error("❌ خطأ في التحديث:", error);
+            this.showErrorMessage();
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    async clearProductsCache() {
+        console.log("🧹 مسح كاش المنتجات والأسعار فقط...");
+        
+        // ✅ مسح كاش المنتجات والأسعار فقط
+        localStorage.removeItem('products_cache');
+        
+        // ✅ إعادة تعيين نظام المنتجات
+        if (productManager) {
+            productManager.products.clear();
+            productManager.lastUpdate = 0;
+        }
+        
+        console.log("✅ تم مسح كاش المنتجات - السلة محفوظة");
+    }
+
+    async adminForceUpdate() {
+        if (!confirm('هل تريد فتح تحديث الأسعار لجميع المستخدمين؟')) return;
+        
+        try {
+            // ✅ زيادة الرقم في الفيربيز
+            await db.collection('system').doc('update').update({
+                updateVersion: firebase.firestore.FieldValue.increment(1),
+                lastUpdated: new Date()
+            });
+            
+            // ✅ تحديث system version محلياً
+            this.currentSystemVersion += 1;
+            
+            alert('✅ تم فتح تحديث الأسعار لجميع المستخدمين!');
+            console.log(`👑 الأدمن فتح تحديث الأسعار - systemVersion أصبح: ${this.currentSystemVersion}`);
+            
+        } catch (error) {
+            console.error('❌ خطأ في فتح التحديث:', error);
+            alert('❌ فشل في فتح التحديث');
+        }
+    }
+
+    showLoading() {
+        if (this.updateButton) {
+            this.updateButton.innerHTML = '⏳ جاري تحديث الأسعار...';
+            this.updateButton.disabled = true;
+            this.updateButton.style.opacity = '0.7';
+        }
+    }
+
+    hideLoading() {
+        if (this.updateButton) {
+            this.updateButton.innerHTML = '🔄 تحديث الأسعار';
+            this.updateButton.disabled = false;
+            this.updateButton.style.opacity = '1';
+        }
+    }
+
+    showSuccessMessage() {
+        this.showNotification('✅ تم تحديث الأسعار والمنتجات بنجاح!', '#4CAF50');
+    }
+
+    showErrorMessage() {
+        this.showNotification('❌ فشل في تحديث الأسعار، حاول مرة أخرى', '#f44336');
+    }
+
+    showNotification(message, color) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed; 
+            top: 20px; 
+            left: 20px; 
+            background: ${color}; 
+            color: white; 
+            padding: 15px 20px; 
+            border-radius: 8px; 
+            z-index: 10000; 
+            animation: slideIn 0.3s ease, fadeOut 0.5s ease 2.5s forwards;
+            font-weight: bold;
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
     }
 }
 
-
-
 // =============================================
-// 🎯 النظام الرئيسي مع إصلاح السلة
+// 🎯 النظام الرئيسي
 // =============================================
 let productManager;
+let updateManager;
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("🚀 بدء تحميل التطبيق...");
@@ -1787,19 +2090,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     productManager = new ProductManager();
     await productManager.initialize();
 
-    // ✅ إعداد أحداث المنتجات - هذا الجزء كان ناقص!
+    // ✅ بدء نظام التحديثات الذكي
+    updateManager = new UpdateManager();
+    await updateManager.initialize();
+
+    // ✅ إعداد أحداث المنتجات
     setupProductEvents();
 
     console.log("✅ التطبيق جاهز للاستخدام");
 });
 
 // =============================================
-// 🎯 إعداد أحداث المنتجات (الحل الجذري للمشكلة)
+// 🎯 إعداد أحداث المنتجات
 // =============================================
 function setupProductEvents() {
     console.log("🎯 بدء إعداد أحداث المنتجات...");
     
-    // ✅ الانتظار حتى تحميل كل العناصر
     setTimeout(() => {
         const productItems = document.querySelectorAll('.product-item');
         console.log(`🔍 تم العثور على ${productItems.length} عنصر منتج`);
@@ -1847,7 +2153,7 @@ function setupProductEvents() {
 }
 
 // =============================================
-// 🎪 نافذة إدخال الكمية (مشغولة 100%)
+// 🎪 نافذة إدخال الكمية
 // =============================================
 let selectedId, selectedName, selectedPrice;
 
@@ -1858,7 +2164,6 @@ function openQuantityModal(id, name, price) {
     selectedName = name;
     selectedPrice = price;
     
-    // ✅ إنشاء النافذة المنبثقة إذا لم تكن موجودة
     createQuantityModalIfNotExists();
     
     const modalProductName = document.getElementById('modalProductName');
@@ -1867,12 +2172,11 @@ function openQuantityModal(id, name, price) {
     
     if (modalProductName && quantityInput && quantityModal) {
         modalProductName.textContent = `ادخل الكمية من: ${name}`;
-        quantityInput.value = ""; // قيمة افتراضية
+        quantityInput.value = "";
         quantityInput.focus();
         quantityModal.style.display = 'flex';
     } else {
         console.error('❌ عناصر المودال غير موجودة');
-        // ✅ إذا فشل المودال، أضف مباشرة إلى السلة
         addToCartDirect(id, name, price, 1);
     }
 }
@@ -1927,7 +2231,7 @@ function addToCartDirect(productId, productName, productPrice, quantity = 1) {
 }
 
 // =============================================
-// 🛒 دالة إضافة للسلة المحسنة (مشغولة 100%)
+// 🛒 دالة إضافة للسلة المحسنة
 // =============================================
 function addToCart(productId, productName, productPrice, quantity = 1) {
     console.log(`🛒 محاولة إضافة: ${productName} × ${quantity}`);
@@ -2005,28 +2309,7 @@ function addToCart(productId, productName, productPrice, quantity = 1) {
 // 🔔 نظام الإشعارات المحسن
 // =============================================
 function showSuccessNotification(productName, quantity) {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed; top: 20px; right: 20px; background: #4CAF50; color: white; padding: 15px 20px; 
-        border-radius: 8px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
-        animation: slideIn 0.3s ease, fadeOut 0.5s ease 2.5s forwards;
-        display: flex; align-items: center; gap: 10px; max-width: 350px; border-right: 5px solid #2E7D32;
-    `;
-    
-    notification.innerHTML = `
-        <span style="font-size: 24px;">✅</span>
-        <div>
-            <strong>تمت الإضافة بنجاح</strong>
-            <div>${productName} × ${quantity}</div>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-        }
-    }, 3000);
+    showNotification(productName, `تمت الإضافة بنجاح - ${productName} × ${quantity}`, "✅", "#4CAF50");
 }
 
 function showUnavailableNotification(productName) {
@@ -2067,7 +2350,7 @@ function showNotification(productName, message, icon, color) {
 }
 
 // =============================================
-// 🔍 نظام البحث والتنقل (محفوظ)
+// 🔍 نظام البحث والتنقل
 // =============================================
 function setupSearch() {
     const searchInput = document.getElementById("searchInput");
@@ -2157,7 +2440,6 @@ function loadOffers() {
 
     if (!container || !track) return;
 
-    // ✅ جلب العروض مرة واحدة فقط
     db.collection("offers").get().then(snapshot => {
         const offers = [];
         snapshot.forEach(doc => {
@@ -2203,7 +2485,7 @@ function loadOffers() {
 }
 
 // =============================================
-// 🔐 نظام المصادقة (محفوظ)
+// 🔐 نظام المصادقة
 // =============================================
 function checkAuthState() {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -2254,7 +2536,6 @@ function logout() {
 window.addEventListener('load', () => {
     console.log("🎉 الصفحة محملة بالكامل");
     
-    // إعادة إعداد الأحداث للتأكد من عملها
     setTimeout(() => {
         setupProductEvents();
     }, 1500);
@@ -2277,10 +2558,10 @@ document.head.appendChild(style);
 
 
 
+
 </body>
 
 </html>
-
 
 
 
