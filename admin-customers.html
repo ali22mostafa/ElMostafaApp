@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>إدارة العملاء - شركة المصطفى</title>
+
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -12,28 +13,33 @@
       margin: 0;
       padding: 0;
     }
+
     .logo {
       display: block;
       margin: 10px auto;
       max-width: 220px;
       border-radius: 20px;
     }
+
     .container {
       max-width: 1200px;
       margin: 20px auto;
       padding: 20px;
     }
+
     h1 {
       color: yellow;
       text-align: center;
       margin-bottom: 30px;
     }
+
     .admin-panel {
       background-color: #222;
       border: 1px solid yellow;
       border-radius: 10px;
       padding: 20px;
     }
+
     .filters {
       display: flex;
       flex-wrap: wrap;
@@ -43,17 +49,19 @@
       background-color: #1a1a1a;
       border-radius: 8px;
     }
+
     .filter-group {
       flex: 1;
       min-width: 200px;
     }
+
     label {
       display: block;
       margin-bottom: 5px;
       color: yellow;
     }
-    input,
-    select {
+
+    input {
       width: 100%;
       padding: 10px;
       border-radius: 5px;
@@ -62,225 +70,56 @@
       color: white;
       font-size: 16px;
     }
-    .back-btn {
-      background-color: #444;
-      color: white;
-      border: none;
+
+    .refresh-btn {
+      background-color: yellow;
+      color: black;
       padding: 10px 15px;
       border-radius: 5px;
+      border: none;
       cursor: pointer;
-      margin-top: 10px;
+      font-weight: bold;
+      width: 150px;
+      margin-bottom: 15px;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
       table-layout: fixed;
     }
-    th,
-    td {
+
+    th, td {
       padding: 12px;
       text-align: right;
       border-bottom: 1px solid #444;
       vertical-align: middle;
       word-wrap: break-word;
     }
+
     th {
       background-color: #333;
       color: yellow;
     }
+
     tr:hover {
       background-color: #2a2a2a;
     }
+
     .no-results {
       text-align: center;
       padding: 20px;
       color: #aaa;
     }
+
     .loading {
       text-align: center;
       padding: 20px;
       color: yellow;
     }
-    .map-cell {
-      width: 150px;
-      height: 120px;
-      position: relative;
-    }
-    .map {
-      height: 100px;
-      width: 140px;
-      border-radius: 8px;
-      border: 1px solid yellow;
-    }
-    .open-gmaps-btn {
-      margin-top: 5px;
-      width: 140px;
-      background-color: yellow;
-      color: black;
-      border: none;
-      border-radius: 5px;
-      padding: 5px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: bold;
-      text-align: center;
-    }
-    @media (max-width: 768px) {
-      th,
-      td {
-        padding: 8px;
-        font-size: 14px;
-      }
-      .map-cell, .map, .open-gmaps-btn {
-        width: 100%;
-        height: 120px;
-      }
-      .open-gmaps-btn {
-        margin-top: 8px;
-      }
-    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-  </style>
-<style>table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  table-layout: fixed;
-}
-th,
-td {
-  padding: 12px;
-  text-align: right;
-  border-bottom: 1px solid #444;
-  vertical-align: middle;
-  word-wrap: break-word;
-}
-th {
-  background-color: #333;
-  color: yellow;
-}
-tr:hover {
-  background-color: #2a2a2a;
-}
-.map-cell {
-  width: 150px;
-  height: auto;
-  position: relative;
-}
-.map {
-  height: 100px;
-  width: 140px;
-  border-radius: 8px;
-  border: 1px solid yellow;
-}
-.open-gmaps-btn {
-  margin-top: 5px;
-  width: 140px;
-  background-color: yellow;
-  color: black;
-  border: none;
-  border-radius: 5px;
-  padding: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-  text-align: center;
-}
-
-/* 📱 رسبونسف على الموبايل */
-@media (max-width: 768px) {
-  table {
-    border: 0;
-    width: 100%;
-  }
-  thead {
-    display: none; /* نخفي العناوين */
-  }
-  tr {
-    display: block;
-    margin-bottom: 15px;
-    border: 1px solid #444;
-    border-radius: 8px;
-    padding: 10px;
-    background: #1a1a1a;
-  }
-  td {
-    display: block;
-    text-align: right;
-    padding: 8px 10px;
-    font-size: 14px;
-    border-bottom: 1px solid #333;
-  }
-  td:last-child {
-    border-bottom: none;
-  }
-
-  /* العناوين لكل عمود */
-  td:nth-of-type(1)::before {
-    content: "الاسم: ";
-    font-weight: bold;
-    color: yellow;
-    display: block;
-    margin-bottom: 5px;
-  }
-  td:nth-of-type(2)::before {
-    content: "رقم الهاتف: ";
-    font-weight: bold;
-    color: yellow;
-    display: block;
-    margin-bottom: 5px;
-  }
-  td:nth-of-type(3)::before {
-    content: "الباسورد: ";
-    font-weight: bold;
-    color: yellow;
-    display: block;
-    margin-bottom: 5px;
-  }
-
-  /* الخريطة والزر جوه نفس العمود */
-  .map-cell {
-    padding: 10px 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-   
-  }
-  .map {
-    display: block;
-    width: 100% !important;
-    height: 50px !important;
-    margin-bottom: 8px;
-  }
-  .open-gmaps-btn {
-    display: block;
-    width: 100% !important;
-    height: 50% !important;
-    margin: 0;
-  }
-}
-
-
-
-
-.back-btn1 {
+    .back-btn1 {
       position: fixed;
       top: 20px;
       right: 20px;
@@ -294,18 +133,63 @@ tr:hover {
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       transition: background 0.3s ease;
     }
+
     .back-btn1:hover {
       background-color: #1565c0;
     }
-</style>
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-  />
+
+    @media (max-width: 768px) {
+      table {
+        border: 0;
+      }
+      thead {
+        display: none;
+      }
+      tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #444;
+        border-radius: 8px;
+        padding: 10px;
+        background: #1a1a1a;
+      }
+      td {
+        display: block;
+        text-align: right;
+        padding: 8px 10px;
+        border-bottom: 1px solid #333;
+      }
+      td:last-child {
+        border-bottom: none;
+      }
+      td:nth-of-type(1)::before {
+        content: "الاسم: ";
+        font-weight: bold;
+        color: yellow;
+      }
+      td:nth-of-type(2)::before {
+        content: "رقم الهاتف: ";
+        font-weight: bold;
+        color: yellow;
+      }
+      td:nth-of-type(3)::before {
+        content: "الباسورد: ";
+        font-weight: bold;
+        color: yellow;
+      }
+      td:nth-of-type(4)::before {
+        content: "الموقع: ";
+        font-weight: bold;
+        color: yellow;
+      }
+    }
+  </style>
 </head>
+
 <body>
+
   <a href="index.html" class="back-btn1">← رجوع</a>
+
   <header>
     <img src="img/zz.jpg" alt="شعار الشركة" class="logo" />
   </header>
@@ -314,14 +198,19 @@ tr:hover {
     <h1>إدارة العملاء</h1>
 
     <div class="admin-panel">
+
+      <!-- زر تحديث البيانات -->
+      <button class="refresh-btn" onclick="refreshData()">🔄 تحديث البيانات</button>
+
       <div class="filters">
         <div class="filter-group">
           <label for="search-name">بحث بالاسم:</label>
-          <input type="text" id="search-name" placeholder="ابحث باسم العميل..." oninput="loadCustomers()" />
+          <input type="text" id="search-name" placeholder="ابحث باسم العميل..." oninput="filterCustomers()">
         </div>
+
         <div class="filter-group">
           <label for="search-phone">بحث برقم الهاتف:</label>
-          <input type="tel" id="search-phone" placeholder="ابحث برقم الهاتف..." oninput="loadCustomers()" />
+          <input type="tel" id="search-phone" placeholder="ابحث برقم الهاتف..." oninput="filterCustomers()">
         </div>
       </div>
 
@@ -332,7 +221,7 @@ tr:hover {
           <tr>
             <th>الاسم</th>
             <th>رقم الهاتف</th>
-            <th>الباسورد </th>
+            <th>الباسورد</th>
             <th>الموقع</th>
           </tr>
         </thead>
@@ -343,16 +232,12 @@ tr:hover {
         لا توجد نتائج مطابقة للبحث
       </div>
 
-      <button class="back-btn" onclick="window.location.href='index.html'">العودة للرئيسية</button>
     </div>
   </div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
   <script>
     // تهيئة Firebase
@@ -368,124 +253,96 @@ tr:hover {
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // لتخزين خرائط العملاء مؤقتًا
-    const maps = {};
+    let customersCache = [];
 
-    async function loadCustomers() {
-      try {
-        const nameSearch = document.getElementById("search-name").value.trim().toLowerCase();
-        const phoneSearch = document.getElementById("search-phone").value.trim();
+    // =============== تحميل البيانات ===================
+    async function loadCustomers(forceUpdate = false) {
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("customers-table").style.display = "none";
+      document.getElementById("no-results").style.display = "none";
 
-        document.getElementById("loading").style.display = "block";
-        document.getElementById("customers-table").style.display = "none";
-        document.getElementById("no-results").style.display = "none";
-
-        const usersSnapshot = await db.collection("users").get();
-
-        const customers = [];
-
-        usersSnapshot.forEach((userDoc) => {
-          const userData = userDoc.data();
-
-          // تصفية حسب الاسم ورقم الهاتف
-          if (
-            (nameSearch && (!userData.name || !userData.name.toLowerCase().includes(nameSearch))) ||
-            (phoneSearch && (!userData.phone || !userData.phone.includes(phoneSearch)))
-          ) {
-            return;
-          }
-
-          customers.push({
-            id: userDoc.id,
-            name: userData.name || "غير معروف",
-            phone: userData.phone || "غير متوفر",
-             password: userData.password || "غير متوفر",
-            location: userData.location || null,
-          });
-        });
-
-        const tbody = document.getElementById("customers-list");
-        tbody.innerHTML = "";
-
-        if (customers.length === 0) {
-          document.getElementById("no-results").style.display = "block";
-          document.getElementById("loading").style.display = "none";
-          return;
+      if (!forceUpdate) {
+        const cached = localStorage.getItem("customersData");
+        if (cached) {
+          customersCache = JSON.parse(cached);
+          return renderCustomers(customersCache);
         }
-
-        // إنشاء صف لكل عميل
-        customers.forEach((customer, index) => {
-          const tr = document.createElement("tr");
-
-          // عمود الموقع: حاوية للخريطة وزر فتح جوجل مابس
-          const mapCell = document.createElement("td");
-          mapCell.classList.add("map-cell");
-
-          if (customer.location && customer.location.latitude && customer.location.longitude) {
-            const mapDiv = document.createElement("div");
-            mapDiv.id = `map-${index}`;
-            mapDiv.className = "map";
-            mapCell.appendChild(mapDiv);
-
-            // زر فتح جوجل مابس
-            const gmapBtn = document.createElement("button");
-            gmapBtn.textContent = "فتح في Google Maps";
-            gmapBtn.className = "open-gmaps-btn";
-            gmapBtn.onclick = () => {
-              const url = `https://www.google.com/maps/search/?api=1&query=${customer.location.latitude},${customer.location.longitude}`;
-              window.open(url, "_blank");
-            };
-            mapCell.appendChild(gmapBtn);
-
-          } else {
-            mapCell.textContent = "لا يوجد موقع";
-          }
-
-          tr.innerHTML = `
-            <td>${customer.name}</td>
-            <td>${customer.phone}</td>
-            <td>${customer.password}</td>
-          `;
-
-          tr.appendChild(mapCell);
-          tbody.appendChild(tr);
-
-          // إنشاء الخريطة بعد إضافتها للصف
-          if (customer.location && customer.location.latitude && customer.location.longitude) {
-            setTimeout(() => {
-              const mapInstance = L.map(`map-${index}`, {
-                center: [customer.location.latitude, customer.location.longitude],
-                zoom: 14,
-                scrollWheelZoom: false,
-                dragging: false,
-                zoomControl: false,
-                attributionControl: false,
-              });
-
-              L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                maxZoom: 19,
-              }).addTo(mapInstance);
-
-              L.marker([customer.location.latitude, customer.location.longitude]).addTo(mapInstance);
-
-              maps[`map-${index}`] = mapInstance;
-            }, 0);
-          }
-        });
-
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("customers-table").style.display = "table";
-
-      } catch (error) {
-        console.error("حدث خطأ أثناء تحميل البيانات:", error);
-        document.getElementById("loading").textContent = "حدث خطأ أثناء تحميل البيانات.";
       }
+
+      const snapshot = await db.collection("users").get();
+      customersCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      localStorage.setItem("customersData", JSON.stringify(customersCache));
+
+      renderCustomers(customersCache);
     }
 
+    // =============== البحث بدون أي Read =================
+    function filterCustomers() {
+      const nameSearch = document.getElementById("search-name").value.trim().toLowerCase();
+      const phoneSearch = document.getElementById("search-phone").value.trim();
+
+      const filtered = customersCache.filter(c => {
+        return (
+          (!nameSearch || (c.name && c.name.toLowerCase().includes(nameSearch))) &&
+          (!phoneSearch || (c.phone && c.phone.includes(phoneSearch)))
+        );
+      });
+
+      renderCustomers(filtered);
+    }
+
+    // =============== عرض العملاء =================
+    function renderCustomers(customers) {
+      const tbody = document.getElementById("customers-list");
+      tbody.innerHTML = "";
+
+      if (customers.length === 0) {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("no-results").style.display = "block";
+        return;
+      }
+
+      customers.forEach(c => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${c.name || "غير معروف"}</td>
+          <td>${c.phone || "غير متوفر"}</td>
+          <td>${c.password || "غير متوفر"}</td>
+          <td>بدون موقع</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("customers-table").style.display = "table";
+    }
+
+    // =============== تحديث البيانات =================
+    function refreshData() {
+      localStorage.removeItem("customersData");
+      loadCustomers(true);
+    }
+
+    // =============== عند تحميل الصفحة =================
     window.onload = () => {
       loadCustomers();
     };
   </script>
+<script>
+  function refreshData() {
+    const pass = prompt("من فضلك أدخل الباسورد لتحديث البيانات:");
+
+    if (pass === "02") {
+      alert("تم تأكيد الباسورد ✓ \nجاري تحديث البيانات...");
+      localStorage.removeItem("customersData");
+      loadCustomers(true);
+    } else {
+      alert("❌ باسورد غير صحيح!");
+    }
+  }
+</script>
+
 </body>
 </html>
-
