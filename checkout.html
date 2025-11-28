@@ -641,8 +641,10 @@ function submitOrder(event) {
       
       Swal.fire({
   icon: 'success',
-  title: 'تم الحفظ  بنجاح.',
-  showConfirmButton: true,
+  title: 'تنبيه في  حاله ان  طلبك أقل من 3000 جنيه… سيتم إضافة 50 جنيه رسوم توصيل.',
+  showConfirmButton: false,
+  timer: 3000,              // ← تختفي بعد 3 ثواني
+  timerProgressBar: true,
   
 }).then(() => {
   // بعد انتهاء الرسالة، روح للصفحة الرئيسية
@@ -670,3 +672,4 @@ function submitOrder(event) {
 </script>
 </body>
 </html>
+
