@@ -1640,6 +1640,7 @@ class ProductManager {
 
         // جلب البيانات من Firebase إذا الكاش فارغ فقط
         if (this.products.size === 0) {
+          console.log("ali")
             await this.loadProductsFromFirebase();
         }
 
@@ -1654,48 +1655,49 @@ class ProductManager {
         }
     }
 
-    async loadProductsFromFirebase() {
-        if (this.isUpdating) return;
-        this.isUpdating = true;
+async loadProductsFromFirebase() {
+    if (this.isUpdating) return;
+    this.isUpdating = true;
 
-        console.log("📥 جلب البيانات من Firebase...");
+    console.log("📥 جلب البيانات من Firebase...");
 
-        try {
-            let snapshot;
-            let source = "";
+    try {
+        // ❗ أول حاجة: نتحقق هل فيه كاش حقيقي في localStorage؟
+        const cache = localStorage.getItem('products_cache');
 
-            // محاولة التحميل من الكاش أولاً
-            try {
-                snapshot = await db.collection("products").get({ source: "cache" });
-                source = "cache";
-                console.log("📦 تم التحميل من Cache");
-            } catch {
-                // إذا الكاش فارغ - التحميل من السيرفر
-                snapshot = await db.collection("products").get({ source: "server" });
-                source = "server";
-                console.log("📦 تم التحميل من السيرفر (الكاش فارغ)");
-            }
+        if (cache) {
+            console.log("📦 تم التحميل من الكاش (بدون Firebase Reads)");
 
-            this.products.clear();
-            let loadedCount = 0;
-
-            snapshot.forEach(doc => {
-                this.products.set(doc.id, doc.data());
-                loadedCount++;
-                this.updateProductInUI(doc.id, doc.data());
-            });
-
-            this.lastUpdate = Date.now();
-            this.saveToCache();
-
-            console.log(`✅ تم تحميل ${loadedCount} منتج من ${source}`);
-
-        } catch (error) {
-            console.error("❌ فشل في تحميل المنتجات:", error);
-        } finally {
+            // حمل من الكاش
+            this.loadFromCache();
+            this.renderProductsFromCache();
             this.isUpdating = false;
+            return;
         }
+
+        // ❗ مفيش كاش → لازم نجيب أول نسخة من السيرفر
+        console.log("⚠️ الكاش فاضي → تحميل أول مرة من السيرفر فقط");
+
+        const snapshot = await db.collection("products").get({ source: "server" });
+
+        this.products.clear();
+
+        snapshot.forEach(doc => {
+            this.products.set(doc.id, doc.data());
+            this.updateProductInUI(doc.id, doc.data());
+        });
+
+        this.lastUpdate = Date.now();
+        this.saveToCache();
+
+        console.log("✅ تم تحميل أولي من السيرفر وحفظه في الكاش");
+
+    } catch (error) {
+        console.error("❌ فشل في تحميل المنتجات:", error);
+    } finally {
+        this.isUpdating = false;
     }
+}
 
     // ✅ دالة التحديث الإجباري من الفيربيز
     async forceRefreshFromFirebase() {
@@ -1919,7 +1921,8 @@ class UpdateManager {
                 
                 // ✅ المقارنة الصحيحة
                 if (this.userVersion < this.currentSystemVersion) {
-                    this.showUpdateButton();
+                   await this.handleUserUpdate()
+
                     console.log("🟡 يظهر زر التحديث - يحتاج تحديث");
                 } else {
                     this.hideUpdateButton();
@@ -1978,6 +1981,9 @@ class UpdateManager {
                 this.showSuccessMessage();
                 
                 console.log(`🎉 تم التحديث - userVersion أصبح: ${this.userVersion}`);
+                setTimeout(() => {
+        window.location.reload();
+    }, 600);
             } else {
                 throw new Error('فشل في التحديث');
             }
@@ -2560,7 +2566,6 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 </script>
-
 
 
 
