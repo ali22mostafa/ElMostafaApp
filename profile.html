@@ -284,156 +284,156 @@
     }
   </style>
   
- <style>/* غلاف الطلب */
-.order-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  border-bottom: 1px solid #444;
-  padding-bottom: 8px;
-  margin-bottom: 10px;
-}
+  <style>
+    /* غلاف الطلب */
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      border-bottom: 1px solid #444;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
 
-.order-id {
-  font-weight: bold;
-  color: yellow;
-  display: block;
-}
+    .order-id {
+      font-weight: bold;
+      color: yellow;
+      display: block;
+    }
 
-.order-date {
-  font-size: 14px;
-  color: #aaa;
-}
+    .order-date {
+      font-size: 14px;
+      color: #aaa;
+    }
 
-.order-status {
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 13px;
-  white-space: nowrap;
-}
+    .order-status {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 13px;
+      white-space: nowrap;
+    }
 
-.status-new { background-color: #ffcc00; color: #000; }
-.status-processing { background-color: #0066ff; color: #fff; }
-.status-completed { background-color: #00aa00; color: #fff; }
-.status-cancelled { background-color: #ff3333; color: #fff; }
+    .status-new { background-color: #ffcc00; color: #000; }
+    .status-processing { background-color: #0066ff; color: #fff; }
+    .status-completed { background-color: #00aa00; color: #fff; }
+    .status-cancelled { background-color: #ff3333; color: #fff; }
 
-/* العناصر */
-.order-items {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+    /* العناصر */
+    .order-items {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
-.order-item {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  background-color: #222;
-  border: 1px solid #444;
-  border-radius: 8px;
-  padding: 10px;
-  gap: 8px;
-}
+    .order-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      background-color: #222;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 10px;
+      gap: 8px;
+    }
 
-.order-item > div:first-child {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 14px;
-}
+    .order-item > div:first-child {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 14px;
+    }
 
-/* أزرار التعديل والحذف */
-.item-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: flex-end;
-}
+    /* أزرار التعديل والحذف */
+    .item-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
 
-.edit-item-btn,
-.remove-item-btn {
-  padding: 6px 10px;
-  font-size: 13px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
+    .edit-item-btn,
+    .remove-item-btn {
+      padding: 6px 10px;
+      font-size: 13px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
 
-.edit-item-btn { background-color: #ffcc00; color: #000; }
-.remove-item-btn { background-color: #ff3333; color: #fff; }
+    .edit-item-btn { background-color: #ffcc00; color: #000; }
+    .remove-item-btn { background-color: #ff3333; color: #fff; }
 
-/* نموذج تعديل الكمية */
-.item-edit-form {
-  display: none;
-  grid-column: 1 / -1; /* يمتد عبر كامل البطاقة */
-  padding: 12px;
-  background-color: #333;
-  border-radius: 6px;
-  margin-top: 6px;
-}
+    /* نموذج تعديل الكمية */
+    .item-edit-form {
+      display: none;
+      grid-column: 1 / -1; /* يمتد عبر كامل البطاقة */
+      padding: 12px;
+      background-color: #333;
+      border-radius: 6px;
+      margin-top: 6px;
+    }
 
-.item-edit-form label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 6px;
-  color: yellow;
-}
+    .item-edit-form label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: yellow;
+    }
 
-.item-edit-form input[type="number"] {
-  width: 100px;
-  padding: 8px;
-  font-size: 14px;
-  text-align: center;
-  border-radius: 5px;
-  border: none;
-  margin-bottom: 10px;
-  background: #444;
-  color: #fff;
-}
+    .item-edit-form input[type="number"] {
+      width: 100px;
+      padding: 8px;
+      font-size: 14px;
+      text-align: center;
+      border-radius: 5px;
+      border: none;
+      margin-bottom: 10px;
+      background: #444;
+      color: #fff;
+    }
 
-/* أزرار حفظ وإلغاء */
-.item-edit-form button {
-  padding: 8px 14px;
-  font-size: 13px;
-  border: none;
-  border-radius: 5px;
-  margin-right: 6px;
-  cursor: pointer;
-}
+    /* أزرار حفظ وإلغاء */
+    .item-edit-form button {
+      padding: 8px 14px;
+      font-size: 13px;
+      border: none;
+      border-radius: 5px;
+      margin-right: 6px;
+      cursor: pointer;
+    }
 
-.item-edit-form button:first-of-type { background-color: #00aa00; color: #fff; }
-.item-edit-form button:last-of-type { background-color: #ff3333; color: #fff; }
+    .item-edit-form button:first-of-type { background-color: #00aa00; color: #fff; }
+    .item-edit-form button:last-of-type { background-color: #ff3333; color: #fff; }
 
-/* موبايل */
-@media (max-width: 700px) {
-  .order-item {
-    grid-template-columns: 1fr;
-    text-align: right;
-  }
-  .item-actions {
-    justify-content: flex-start;
-  }
-  .item-edit-form input[type="number"] {
-    width: 80%;
-  }
-  .item-edit-form button {
-    width: 28%;
-    font-size: 14px;
-  }
-}
-</style>
+    /* موبايل */
+    @media (max-width: 700px) {
+      .order-item {
+        grid-template-columns: 1fr;
+        text-align: right;
+      }
+      .item-actions {
+        justify-content: flex-start;
+      }
+      .item-edit-form input[type="number"] {
+        width: 80%;
+      }
+      .item-edit-form button {
+        width: 28%;
+        font-size: 14px;
+      }
+    }
+  </style>
   <style>
     input,
-textarea,
-select {
-  font-size: 16px; /* يمنع الزوم على الموبايل */
-}
-
+    textarea,
+    select {
+      font-size: 16px; /* يمنع الزوم على الموبايل */
+    }
   </style>
   <!-- ضف هذا في الـ head -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
   <a href="index.html" class="back-btn1">← رجوع</a>
@@ -471,8 +471,12 @@ select {
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script>
-    // Firebase Configuration
-    const firebaseConfig = {
+    // ============================================
+    // إعداد Firebase - مشروعين مختلفين
+    // ============================================
+
+    // المشروع الأول: للمنتجات والمستخدمين (mostafa-products)
+    const firebaseConfigProducts = {
       apiKey: "AIzaSyBKtxMNJ3n_YIsy671sbhlk8Qm1yt5uSB4",
       authDomain: "mostafa-products.firebaseapp.com",
       projectId: "mostafa-products",
@@ -481,16 +485,30 @@ select {
       appId: "1:841270845665:web:f2f857112688b8b8be57a0"
     };
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    // المشروع الثاني: للأوردرات (pricelistofelmostafa)
+    const firebaseConfigOrders = {
+      apiKey: "AIzaSyCR_9LTEVlFMnYhGT5JaqR2hG2lu06D9Ow",
+      authDomain: "pricelistofelmostafa.firebaseapp.com",
+      projectId: "pricelistofelmostafa",
+      storageBucket: "pricelistofelmostafa.firebasestorage.app",
+      messagingSenderId: "39463931277",
+      appId: "1:39463931277:web:02cc42fc88508696b501c4"
+    };
+
+    // تهيئة التطبيق الأول للمنتجات والمستخدمين
+    const appProducts = firebase.initializeApp(firebaseConfigProducts, "products");
+    const dbProducts = firebase.firestore(appProducts);
+
+    // تهيئة التطبيق الثاني للأوردرات
+    const appOrders = firebase.initializeApp(firebaseConfigOrders, "orders");
+    const dbOrders = firebase.firestore(appOrders);
 
     // متغير لتخزين المنتجات المتاحة
     let availableProducts = [];
 
-    // جلب المنتجات المتاحة من قاعدة البيانات
+    // جلب المنتجات المتاحة من قاعدة البيانات الأولى
     function fetchAvailableProducts() {
-      db.collection("products").where("available", "==", true).get()
+      dbProducts.collection("products").where("available", "==", true).get()
         .then((querySnapshot) => {
           availableProducts = [];
           querySnapshot.forEach((doc) => {
@@ -508,7 +526,7 @@ select {
     // التحقق من توفر المخزون قبل التعديل
     async function checkStockAvailability(productId, requestedQuantity, currentQuantity = 0) {
       try {
-        const productDoc = await db.collection("products").doc(productId).get();
+        const productDoc = await dbProducts.collection("products").doc(productId).get();
         
         if (!productDoc.exists) {
           return { available: false, message: "المنتج غير موجود" };
@@ -517,6 +535,16 @@ select {
         const productData = productDoc.data();
         const availableStock = productData.stock || 0;
         const maxOrder = productData.maxOrder || 0;
+        const unlimitedStock = productData.unlimitedStock || false;
+        
+        // إذا كان المنتج يعمل "علي المكشوف"، نتجاهل فحص المخزون
+        if (unlimitedStock) {
+          return { 
+            available: true, 
+            productData: productData,
+            unlimitedStock: true 
+          };
+        }
         
         // حساب الكمية الفعلية المطلوبة (الفرق بين الكمية الجديدة والقديمة)
         const actualRequestedQuantity = requestedQuantity - currentQuantity;
@@ -531,18 +559,17 @@ select {
         
         // التحقق من الحد الأقصى للطلب
         if (maxOrder > 0 && requestedQuantity > maxOrder) {
-          
           return { 
             available: false, 
-            message: `تجاوزت الحد الأقصى للطلب. الحد الأقصى: ${maxOrder} وحدة` ,
-           
-            
-
-          }
-         
+            message: `تجاوزت الحد الأقصى للطلب. الحد الأقصى: ${maxOrder} وحدة`
+          };
         }
         
-        return { available: true, productData: productData };
+        return { 
+          available: true, 
+          productData: productData,
+          unlimitedStock: false 
+        };
       } catch (error) {
         console.error("Error checking stock availability:", error);
         return { available: false, message: "حدث خطأ أثناء التحقق من المخزون" };
@@ -550,11 +577,16 @@ select {
     }
 
     // تحديث المخزون بعد التعديل
-    async function updateProductStock(productId, quantityChange) {
+    async function updateProductStock(productId, quantityChange, unlimitedStock = false) {
+      // إذا كان المنتج يعمل "علي المكشوف"، لا نقوم بتحديث المخزون
+      if (unlimitedStock) {
+        return { success: true, message: "تم التحديث (الشغل علي المكشوف)" };
+      }
+      
       try {
-        const productRef = db.collection("products").doc(productId);
+        const productRef = dbProducts.collection("products").doc(productId);
         
-        await db.runTransaction(async (transaction) => {
+        await dbProducts.runTransaction(async (transaction) => {
           const productDoc = await transaction.get(productRef);
           
           if (!productDoc.exists) {
@@ -619,8 +651,8 @@ select {
         </div>
       `;
 
-      // جلب الإشعارات
-      db.collection('notifications')
+      // جلب الإشعارات من المشروع الأول
+      dbProducts.collection('notifications')
         .where('userId', '==', user.id)
         .orderBy('timestamp', 'desc')
         .onSnapshot(snapshot => {
@@ -654,8 +686,8 @@ select {
           });
         });
 
-      // جلب الطلبات
-      db.collection('orders')
+      // جلب الطلبات من المشروع الثاني (pricelistofelmostafa)
+      dbOrders.collection('orders')
         .where('customerPhone', '==', user.phone)
         .orderBy('timestamp', 'desc')
         .onSnapshot(snapshot => {
@@ -673,6 +705,13 @@ select {
             let formattedDate = 'غير معروف';
             if (order.timestamp && order.timestamp.toDate) {
               formattedDate = order.timestamp.toDate().toLocaleString('ar-EG');
+            } else if (order.timestamp) {
+              // إذا كان timestamp ليس من نوع Firestore
+              try {
+                formattedDate = new Date(order.timestamp).toLocaleString('ar-EG');
+              } catch {
+                formattedDate = 'غير معروف';
+              }
             }
 
             let statusClass = '';
@@ -694,7 +733,7 @@ select {
                 <span class="order-status ${statusClass}">${order.status}</span>
               </div>
               <div class="order-items" id="order-items-${order.id}">
-                ${order.items.map((item, index) => `
+                ${order.items ? order.items.map((item, index) => `
                   <div class="order-item" id="item-${order.id}-${index}">
                     <div>
                       <span>${item.name} (${item.quantity} × ${item.price} ج)</span>
@@ -713,15 +752,15 @@ select {
                     </div>
                     ` : ''}
                   </div>
-                `).join('')}
+                `).join('') : '<p>لا توجد عناصر</p>'}
               </div>
-              <div class="order-total">الإجمالي: ${order.total.toFixed(2)} ج</div>
+              <div class="order-total">الإجمالي: ${order.total ? order.total.toFixed(2) : '0.00'} ج</div>
               
               ${canEdit ? `
               <div class="order-actions">
-                <button  style="display:none"  class="add-item-btn" onclick="showAddItemForm('${order.id}')">إضافة صنف</button>
+                <button style="display:none" class="add-item-btn" onclick="showAddItemForm('${order.id}')">إضافة صنف</button>
                 <div>
-                  <button  style="display:none" class="edit-order-btn" onclick="showEditOrderForm('${order.id}')">تعديل الطلب</button>
+                  <button style="display:none" class="edit-order-btn" onclick="showEditOrderForm('${order.id}')">تعديل الطلب</button>
                   <button class="cancel-order-btn" onclick="cancelOrder('${order.id}', '${user.id}', '${user.name}')">إلغاء الطلب</button>
                 </div>
               </div>
@@ -783,7 +822,8 @@ select {
         return;
       }
 
-      db.collection('users').doc(userId).update({
+      // تحديث بيانات المستخدم في المشروع الأول
+      dbProducts.collection('users').doc(userId).update({
         name: name,
         phone: phone,
         address: address,
@@ -792,11 +832,11 @@ select {
         const updatedUser = { id: userId, name, phone, address, deliveryDays };
         localStorage.setItem('user', JSON.stringify(updatedUser));
         Swal.fire({
-  icon: 'success',
-  title: 'تم الحفظ',
-  text: 'تم حفظ التعديلات بنجاح.',
-  confirmButtonText: 'حسناً'
-});
+          icon: 'success',
+          title: 'تم الحفظ',
+          text: 'تم حفظ التعديلات بنجاح.',
+          confirmButtonText: 'حسناً'
+        });
 
         displayUserInfoAndData();
       }).catch((error) => {
@@ -806,7 +846,7 @@ select {
     }
 
     function markNotificationAsRead(notificationId) {
-      db.collection('notifications').doc(notificationId).update({ read: true })
+      dbProducts.collection('notifications').doc(notificationId).update({ read: true })
         .then(() => console.log('تم التعليم كمقروء'))
         .catch(err => console.error('خطأ في التحديث:', err));
     }
@@ -824,13 +864,18 @@ select {
       const newQuantity = parseInt(document.getElementById(`item-quantity-${orderId}-${itemIndex}`).value);
       
       if (isNaN(newQuantity) || newQuantity < 1) {
-      Swal.fire({icon:'error',title:'خطأ في الكمية',text:'الكمية يجب أن تكون رقم صحيح أكبر من الصفر',confirmButtonText:'حسناً'});
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ في الكمية',
+          text: 'الكمية يجب أن تكون رقم صحيح أكبر من الصفر',
+          confirmButtonText: 'حسناً'
+        });
         return;
       }
 
       try {
-        // جلب بيانات الطلب الحالية
-        const orderDoc = await db.collection('orders').doc(orderId).get();
+        // جلب بيانات الطلب الحالية من المشروع الثاني
+        const orderDoc = await dbOrders.collection('orders').doc(orderId).get();
         if (!orderDoc.exists) {
           alert("الطلب غير موجود");
           return;
@@ -840,7 +885,7 @@ select {
         const currentItem = order.items[itemIndex];
         const currentQuantity = currentItem.quantity;
 
-        // التحقق من توفر المخزون
+        // التحقق من توفر المخزون من المشروع الأول
         const stockCheck = await checkStockAvailability(productId, newQuantity, currentQuantity);
         if (!stockCheck.available) {
           alert(stockCheck.message);
@@ -850,27 +895,26 @@ select {
         // حساب الفرق في الكمية لتحديث المخزون
         const quantityDifference = newQuantity - currentQuantity;
 
-        // تحديث المخزون
-        const stockUpdate = await updateProductStock(productId, quantityDifference);
+        // تحديث المخزون في المشروع الأول
+        const stockUpdate = await updateProductStock(productId, quantityDifference, stockCheck.unlimitedStock);
         if (!stockUpdate.success) {
           alert(stockUpdate.message);
           return;
         }
 
-        // تحديث الطلب
+        // تحديث الطلب في المشروع الثاني
         const items = [...order.items];
         items[itemIndex].quantity = newQuantity;
         
         const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
-        await db.collection('orders').doc(orderId).update({
+        await dbOrders.collection('orders').doc(orderId).update({
           items: items,
           total: newTotal,
           lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-       Swal.fire('تم الحفظ!', 'تم حفظ التعديلات بنجاح.', 'success');
-
+        Swal.fire('تم الحفظ!', 'تم حفظ التعديلات بنجاح.', 'success');
         hideEditItemForm(orderId, itemIndex);
         
         sendAdminNotification(
@@ -891,8 +935,8 @@ select {
       }
 
       try {
-        // جلب بيانات الطلب الحالية
-        const orderDoc = await db.collection('orders').doc(orderId).get();
+        // جلب بيانات الطلب الحالية من المشروع الثاني
+        const orderDoc = await dbOrders.collection('orders').doc(orderId).get();
         if (!orderDoc.exists) {
           alert("الطلب غير موجود");
           return;
@@ -902,17 +946,23 @@ select {
         const items = [...order.items];
         const removedItem = items.splice(itemIndex, 1)[0];
         
-        // إرجاع الكمية المحذوفة إلى المخزون
-        const stockUpdate = await updateProductStock(removedItem.id, -removedItem.quantity);
-        if (!stockUpdate.success) {
-          alert(stockUpdate.message);
-          return;
+        // التحقق من إعداد الشغل علي المكشوف قبل إرجاع المخزون
+        const productDoc = await dbProducts.collection("products").doc(removedItem.id).get();
+        const unlimitedStock = productDoc.exists ? (productDoc.data().unlimitedStock || false) : false;
+        
+        // إرجاع الكمية المحذوفة إلى المخزون فقط إذا لم يكن المنتج يعمل "علي المكشوف"
+        if (!unlimitedStock) {
+          const stockUpdate = await updateProductStock(removedItem.id, -removedItem.quantity);
+          if (!stockUpdate.success) {
+            alert(stockUpdate.message);
+            return;
+          }
         }
 
         const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
         if (items.length === 0) {
-          await db.collection('orders').doc(orderId).update({
+          await dbOrders.collection('orders').doc(orderId).update({
             status: 'ملغي',
             items: items,
             total: newTotal,
@@ -920,7 +970,7 @@ select {
             cancellationReason: 'تم حذف جميع الأصناف'
           });
         } else {
-          await db.collection('orders').doc(orderId).update({
+          await dbOrders.collection('orders').doc(orderId).update({
             items: items,
             total: newTotal,
             lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
@@ -933,7 +983,7 @@ select {
           orderId, 
           userId, 
           userName, 
-          `قام بحذف "${productName}" من الطلب وتم إرجاع ${removedItem.quantity} وحدة للمخزون`
+          `قام بحذف "${productName}" من الطلب ${unlimitedStock ? '' : `وتم إرجاع ${removedItem.quantity} وحدة للمخزون`}`
         );
       } catch (error) {
         console.error("Error removing item: ", error);
@@ -947,8 +997,8 @@ select {
       }
 
       try {
-        // جلب بيانات الطلب الحالية
-        const orderDoc = await db.collection('orders').doc(orderId).get();
+        // جلب بيانات الطلب الحالية من المشروع الثاني
+        const orderDoc = await dbOrders.collection('orders').doc(orderId).get();
         if (!orderDoc.exists) {
           alert("الطلب غير موجود");
           return;
@@ -956,12 +1006,19 @@ select {
 
         const order = orderDoc.data();
 
-        // إرجاع جميع الكميات إلى المخزون
+        // إرجاع جميع الكميات إلى المخزون في المشروع الأول
         for (const item of order.items) {
-          await updateProductStock(item.id, -item.quantity);
+          // التحقق من الشغل علي المكشوف
+          const productDoc = await dbProducts.collection("products").doc(item.id).get();
+          const unlimitedStock = productDoc.exists ? (productDoc.data().unlimitedStock || false) : false;
+          
+          if (!unlimitedStock) {
+            await updateProductStock(item.id, -item.quantity);
+          }
         }
 
-        await db.collection('orders').doc(orderId).update({
+        // تحديث حالة الطلب في المشروع الثاني
+        await dbOrders.collection('orders').doc(orderId).update({
           status: 'ملغي',
           lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
           cancellationReason: 'تم الإلغاء من قبل العميل'
@@ -993,7 +1050,8 @@ select {
       const newStatus = document.getElementById(`edit-status-${orderId}`).value;
       const newNotes = document.getElementById(`edit-notes-${orderId}`).value.trim();
 
-      db.collection('orders').doc(orderId).update({
+      // تحديث الطلب في المشروع الثاني
+      dbOrders.collection('orders').doc(orderId).update({
         status: newStatus,
         notes: newNotes,
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
@@ -1037,15 +1095,15 @@ select {
       }
 
       try {
-        // التحقق من توفر المخزون
+        // التحقق من توفر المخزون من المشروع الأول
         const stockCheck = await checkStockAvailability(productId, quantity);
         if (!stockCheck.available) {
           alert(stockCheck.message);
           return;
         }
 
-        // جلب بيانات الطلب الحالية
-        const orderDoc = await db.collection('orders').doc(orderId).get();
+        // جلب بيانات الطلب الحالية من المشروع الثاني
+        const orderDoc = await dbOrders.collection('orders').doc(orderId).get();
         if (!orderDoc.exists) {
           alert("الطلب غير موجود");
           return;
@@ -1069,8 +1127,8 @@ select {
             return;
           }
           
-          // تحديث المخزون للكمية الإضافية فقط
-          const stockUpdate = await updateProductStock(productId, quantity);
+          // تحديث المخزون للكمية الإضافية فقط (مع دعم الشغل علي المكشوف)
+          const stockUpdate = await updateProductStock(productId, quantity, stockCheckTotal.unlimitedStock);
           if (!stockUpdate.success) {
             alert(stockUpdate.message);
             return;
@@ -1079,8 +1137,8 @@ select {
           items[existingItemIndex].quantity = newTotalQuantity;
         } else {
           // إذا كان الصنف غير موجود نضيفه جديد
-          // تحديث المخزون للكمية الجديدة
-          const stockUpdate = await updateProductStock(productId, quantity);
+          // تحديث المخزون للكمية الجديدة (مع دعم الشغل علي المكشوف)
+          const stockUpdate = await updateProductStock(productId, quantity, stockCheck.unlimitedStock);
           if (!stockUpdate.success) {
             alert(stockUpdate.message);
             return;
@@ -1096,7 +1154,8 @@ select {
         
         const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
-        await db.collection('orders').doc(orderId).update({
+        // تحديث الطلب في المشروع الثاني
+        await dbOrders.collection('orders').doc(orderId).update({
           items: items,
           total: newTotal,
           lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
@@ -1120,7 +1179,8 @@ select {
     function sendAdminNotification(orderId, userId, userName, action) {
       const notificationMessage = `العميل ${userName} - ${action} - الطلب ${orderId}`;
       
-      db.collection('adminNotifications').add({
+      // إرسال الإشعار إلى المشروع الأول
+      dbProducts.collection('adminNotifications').add({
         message: notificationMessage,
         orderId: orderId,
         userId: userId,
@@ -1143,326 +1203,5 @@ select {
       displayUserInfoAndData();
     });
   </script>
-
-
-<!-- شغل علي المكشوف  -->
-
-<script>
-  // التحقق من توفر المخزون قبل التعديل - مع دعم الشغل علي المكشوف
-async function checkStockAvailability(productId, requestedQuantity, currentQuantity = 0) {
-  try {
-    const productDoc = await db.collection("products").doc(productId).get();
-    
-    if (!productDoc.exists) {
-      return { available: false, message: "المنتج غير موجود" };
-    }
-    
-    const productData = productDoc.data();
-    const availableStock = productData.stock || 0;
-    const maxOrder = productData.maxOrder || 0;
-    const unlimitedStock = productData.unlimitedStock || false;
-    
-    // إذا كان المنتج يعمل "علي المكشوف"، نتجاهل فحص المخزون
-    if (unlimitedStock) {
-      return { 
-        available: true, 
-        productData: productData,
-        unlimitedStock: true 
-      };
-    }
-    
-    // حساب الكمية الفعلية المطلوبة (الفرق بين الكمية الجديدة والقديمة)
-    const actualRequestedQuantity = requestedQuantity - currentQuantity;
-    
-    // التحقق من توفر المخزون
-    if (availableStock < actualRequestedQuantity) {
-      return { 
-        available: false, 
-        message: `الكمية المطلوبة غير متوفرة. المتاح: ${availableStock} وحدة` 
-      };
-    }
-    
-    // التحقق من الحد الأقصى للطلب
-    if (maxOrder > 0 && requestedQuantity > maxOrder) {
-      return { 
-        available: false, 
-        message: `تجاوزت الحد الأقصى للطلب. الحد الأقصى: ${maxOrder} وحدة`
-      };
-    }
-    
-    return { 
-      available: true, 
-      productData: productData,
-      unlimitedStock: false 
-    };
-  } catch (error) {
-    console.error("Error checking stock availability:", error);
-    return { available: false, message: "حدث خطأ أثناء التحقق من المخزون" };
-  }
-}
-
-// تحديث المخزون بعد التعديل - مع دعم الشغل علي المكشوف
-async function updateProductStock(productId, quantityChange, unlimitedStock = false) {
-  // إذا كان المنتج يعمل "علي المكشوف"، لا نقوم بتحديث المخزون
-  if (unlimitedStock) {
-    return { success: true, message: "تم التحديث (الشغل علي المكشوف)" };
-  }
-  
-  try {
-    const productRef = db.collection("products").doc(productId);
-    
-    await db.runTransaction(async (transaction) => {
-      const productDoc = await transaction.get(productRef);
-      
-      if (!productDoc.exists) {
-        throw new Error("المنتج غير موجود");
-      }
-      
-      const productData = productDoc.data();
-      const currentStock = productData.stock || 0;
-      const newStock = currentStock - quantityChange;
-      
-      if (newStock < 0) {
-        throw new Error("الكمية المطلوبة غير متوفرة في المخزون");
-      }
-      
-      transaction.update(productRef, { stock: newStock });
-    });
-    
-    return { success: true };
-  } catch (error) {
-    console.error("Error updating product stock:", error);
-    return { success: false, message: error.message };
-  }
-}
-
-// تحديث كمية المنتج في الطلب - مع دعم الشغل علي المكشوف
-async function updateItemQuantity(orderId, itemIndex, productId, productName, productPrice, userId, userName) {
-  const newQuantity = parseInt(document.getElementById(`item-quantity-${orderId}-${itemIndex}`).value);
-  
-  if (isNaN(newQuantity) || newQuantity < 1) {
-    Swal.fire({
-      icon: 'error',
-      title: 'خطأ في الكمية',
-      text: 'الكمية يجب أن تكون رقم صحيح أكبر من الصفر',
-      confirmButtonText: 'حسناً'
-    });
-    return;
-  }
-
-  try {
-    // جلب بيانات الطلب الحالية
-    const orderDoc = await db.collection('orders').doc(orderId).get();
-    if (!orderDoc.exists) {
-      alert("الطلب غير موجود");
-      return;
-    }
-
-    const order = orderDoc.data();
-    const currentItem = order.items[itemIndex];
-    const currentQuantity = currentItem.quantity;
-
-    // التحقق من توفر المخزون (مع دعم الشغل علي المكشوف)
-    const stockCheck = await checkStockAvailability(productId, newQuantity, currentQuantity);
-    if (!stockCheck.available) {
-      alert(stockCheck.message);
-      return;
-    }
-
-    // حساب الفرق في الكمية لتحديث المخزون
-    const quantityDifference = newQuantity - currentQuantity;
-
-    // تحديث المخزون (مع دعم الشغل علي المكشوف)
-    const stockUpdate = await updateProductStock(productId, quantityDifference, stockCheck.unlimitedStock);
-    if (!stockUpdate.success) {
-      alert(stockUpdate.message);
-      return;
-    }
-
-    // تحديث الطلب
-    const items = [...order.items];
-    items[itemIndex].quantity = newQuantity;
-    
-    const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    await db.collection('orders').doc(orderId).update({
-      items: items,
-      total: newTotal,
-      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    Swal.fire('تم الحفظ!', 'تم حفظ التعديلات بنجاح.', 'success');
-    hideEditItemForm(orderId, itemIndex);
-    
-    sendAdminNotification(
-      orderId, 
-      userId, 
-      userName, 
-      `قام بتعديل كمية "${productName}" من ${currentQuantity} إلى ${newQuantity}`
-    );
-  } catch (error) {
-    console.error("Error updating item quantity: ", error);
-    alert("حدث خطأ أثناء تحديث الكمية");
-  }
-}
-
-// حذف منتج من الطلب - مع دعم الشغل علي المكشوف
-async function removeItemFromOrder(orderId, itemIndex, productName, userId, userName) {
-  if (!confirm(`هل أنت متأكد من حذف "${productName}" من الطلب؟`)) {
-    return;
-  }
-
-  try {
-    // جلب بيانات الطلب الحالية
-    const orderDoc = await db.collection('orders').doc(orderId).get();
-    if (!orderDoc.exists) {
-      alert("الطلب غير موجود");
-      return;
-    }
-
-    const order = orderDoc.data();
-    const items = [...order.items];
-    const removedItem = items.splice(itemIndex, 1)[0];
-    
-    // التحقق من إعداد الشغل علي المكشوف قبل إرجاع المخزون
-    const productDoc = await db.collection("products").doc(removedItem.id).get();
-    const unlimitedStock = productDoc.exists ? (productDoc.data().unlimitedStock || false) : false;
-    
-    // إرجاع الكمية المحذوفة إلى المخزون فقط إذا لم يكن المنتج يعمل "علي المكشوف"
-    if (!unlimitedStock) {
-      const stockUpdate = await updateProductStock(removedItem.id, -removedItem.quantity);
-      if (!stockUpdate.success) {
-        alert(stockUpdate.message);
-        return;
-      }
-    }
-
-    const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    if (items.length === 0) {
-      await db.collection('orders').doc(orderId).update({
-        status: 'ملغي',
-        items: items,
-        total: newTotal,
-        lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-        cancellationReason: 'تم حذف جميع الأصناف'
-      });
-    } else {
-      await db.collection('orders').doc(orderId).update({
-        items: items,
-        total: newTotal,
-        lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
-
-    alert("تم حذف الصنف من الطلب");
-    
-    sendAdminNotification(
-      orderId, 
-      userId, 
-      userName, 
-      `قام بحذف "${productName}" من الطلب ${unlimitedStock ? '' : `وتم إرجاع ${removedItem.quantity} وحدة للمخزون`}`
-    );
-  } catch (error) {
-    console.error("Error removing item: ", error);
-    alert("حدث خطأ أثناء حذف الصنف");
-  }
-}
-
-// إضافة منتج جديد للطلب - مع دعم الشغل علي المكشوف
-async function addItemToOrder(orderId, userId, userName) {
-  const productSelect = document.getElementById(`new-item-product-${orderId}`);
-  const productId = productSelect.value;
-  const productOption = productSelect.options[productSelect.selectedIndex];
-  const productName = productOption.text.split(' - ')[0];
-  const productPrice = parseFloat(productOption.getAttribute('data-price'));
-  const quantity = parseInt(document.getElementById(`new-item-quantity-${orderId}`).value);
-
-  if (isNaN(quantity) || quantity < 1) {
-    alert("الكمية يجب أن تكون رقم صحيح أكبر من الصفر");
-    return;
-  }
-
-  try {
-    // التحقق من توفر المخزون (مع دعم الشغل علي المكشوف)
-    const stockCheck = await checkStockAvailability(productId, quantity);
-    if (!stockCheck.available) {
-      alert(stockCheck.message);
-      return;
-    }
-
-    // جلب بيانات الطلب الحالية
-    const orderDoc = await db.collection('orders').doc(orderId).get();
-    if (!orderDoc.exists) {
-      alert("الطلب غير موجود");
-      return;
-    }
-
-    const order = orderDoc.data();
-    const items = [...order.items];
-    
-    // التحقق إذا كان الصنف موجود بالفعل في الطلب
-    const existingItemIndex = items.findIndex(item => item.id === productId);
-    
-    if (existingItemIndex >= 0) {
-      // إذا كان الصنف موجود نزيد الكمية فقط
-      const currentQuantity = items[existingItemIndex].quantity;
-      const newTotalQuantity = currentQuantity + quantity;
-      
-      // التحقق مرة أخرى من توفر المخزون للكمية الإجمالية
-      const stockCheckTotal = await checkStockAvailability(productId, newTotalQuantity, currentQuantity);
-      if (!stockCheckTotal.available) {
-        alert(stockCheckTotal.message);
-        return;
-      }
-      
-      // تحديث المخزون للكمية الإضافية فقط (مع دعم الشغل علي المكشوف)
-      const stockUpdate = await updateProductStock(productId, quantity, stockCheckTotal.unlimitedStock);
-      if (!stockUpdate.success) {
-        alert(stockUpdate.message);
-        return;
-      }
-      
-      items[existingItemIndex].quantity = newTotalQuantity;
-    } else {
-      // إذا كان الصنف غير موجود نضيفه جديد
-      // تحديث المخزون للكمية الجديدة (مع دعم الشغل علي المكشوف)
-      const stockUpdate = await updateProductStock(productId, quantity, stockCheck.unlimitedStock);
-      if (!stockUpdate.success) {
-        alert(stockUpdate.message);
-        return;
-      }
-      
-      items.push({
-        id: productId,
-        name: productName,
-        price: productPrice,
-        quantity: quantity
-      });
-    }
-    
-    const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    await db.collection('orders').doc(orderId).update({
-      items: items,
-      total: newTotal,
-      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    alert("تم إضافة الصنف إلى الطلب بنجاح");
-    hideAddItemForm(orderId);
-    
-    sendAdminNotification(
-      orderId, 
-      userId, 
-      userName, 
-      `قام بإضافة ${quantity} من "${productName}" إلى الطلب`
-    );
-  } catch (error) {
-    console.error("Error adding item to order: ", error);
-    alert("حدث خطأ أثناء إضافة الصنف إلى الطلب");
-  }
-}
-</script>
 </body>
 </html>
