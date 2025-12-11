@@ -426,8 +426,12 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script>
-    // تكوين Firebase
-    const firebaseConfig = {
+    // ============================================
+    // إعداد Firebase - مشروعين مختلفين
+    // ============================================
+
+    // المشروع الأول: للمنتجات والمستخدمين (mostafa-products)
+    const firebaseConfigProducts = {
       apiKey: "AIzaSyBKtxMNJ3n_YIsy671sbhlk8Qm1yt5uSB4",
       authDomain: "mostafa-products.firebaseapp.com",
       projectId: "mostafa-products",
@@ -436,9 +440,23 @@
       appId: "1:841270845665:web:f2f857112688b8b8be57a0"
     };
 
-    // تهيئة Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    // المشروع الثاني: للأوردرات (pricelistofelmostafa) - من هنا نجلب الطلبات
+    const firebaseConfigOrders = {
+      apiKey: "AIzaSyCR_9LTEVlFMnYhGT5JaqR2hG2lu06D9Ow",
+      authDomain: "pricelistofelmostafa.firebaseapp.com",
+      projectId: "pricelistofelmostafa",
+      storageBucket: "pricelistofelmostafa.firebasestorage.app",
+      messagingSenderId: "39463931277",
+      appId: "1:39463931277:web:02cc42fc88508696b501c4"
+    };
+
+    // تهيئة التطبيق الأول للمنتجات والمستخدمين
+    const appProducts = firebase.initializeApp(firebaseConfigProducts, "products");
+    const dbProducts = firebase.firestore(appProducts);
+
+    // تهيئة التطبيق الثاني للأوردرات
+    const appOrders = firebase.initializeApp(firebaseConfigOrders, "orders");
+    const dbOrders = firebase.firestore(appOrders);
 
     // متغيرات التطبيق
     let allOrders = [];
@@ -449,10 +467,10 @@
     // متغير لتخزين تجميع جميع المنتجات
     let allProductsAggregation = {};
     
-    // جلب جميع الطلبات وجميع المستخدمين
+    // جلب جميع الطلبات من المشروع الثاني وجميع المستخدمين من المشروع الأول
     function fetchOrders() {
-      // جلب الطلبات
-      db.collection('orders').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+      // جلب الطلبات من المشروع الثاني (pricelistofelmostafa)
+      dbOrders.collection('orders').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
         allOrders = [];
         snapshot.forEach(doc => {
           const order = doc.data();
@@ -460,6 +478,13 @@
           // تحويل الطابع الزمني إلى تاريخ قابل للقراءة
           if (order.timestamp && order.timestamp.toDate) {
             order.formattedDate = order.timestamp.toDate().toLocaleString('ar-EG');
+          } else if (order.timestamp) {
+            // إذا كان timestamp ليس من نوع Firestore
+            try {
+              order.formattedDate = new Date(order.timestamp).toLocaleString('ar-EG');
+            } catch {
+              order.formattedDate = 'غير معروف';
+            }
           } else {
             order.formattedDate = 'غير معروف';
           }
@@ -469,8 +494,8 @@
         calculateAllOrders(); // حساب التجميع تلقائياً عند جلب البيانات
       });
 
-      // جلب بيانات المستخدمين لربط أيام التوصيل
-      db.collection('users').onSnapshot(snapshot => {
+      // جلب بيانات المستخدمين لربط أيام التوصيل من المشروع الأول
+      dbProducts.collection('users').onSnapshot(snapshot => {
         allUsers = [];
         snapshot.forEach(doc => {
           const user = doc.data();
@@ -518,8 +543,8 @@
         
         const matchesSearch = currentSearch === '' || 
                             order.id.toLowerCase().includes(currentSearch) ||
-                            order.customerName.toLowerCase().includes(currentSearch) ||
-                            order.customerPhone.toLowerCase().includes(currentSearch);
+                            (order.customerName && order.customerName.toLowerCase().includes(currentSearch)) ||
+                            (order.customerPhone && order.customerPhone.toLowerCase().includes(currentSearch));
         
         return matchesFilter && matchesSearch;
       });
@@ -558,23 +583,23 @@
           </div>
           
           <div class="customer-info">
-            <p><strong>العميل:</strong> ${order.customerName}</p>
-            <p><strong>الهاتف:</strong> ${order.customerPhone}</p>
-            <p><strong>العنوان:</strong> ${order.customerAddress}</p>
+            <p><strong>العميل:</strong> ${order.customerName || 'غير معروف'}</p>
+            <p><strong>الهاتف:</strong> ${order.customerPhone || 'غير معروف'}</p>
+            <p><strong>العنوان:</strong> ${order.customerAddress || 'غير محدد'}</p>
             <p><strong>أيام التوصيل:</strong> ${deliveryDays}</p>
             ${order.notes ? `<p><strong>ملاحظات:</strong> ${order.notes}</p>` : ''}
           </div>
           
           <div class="order-items">
-            ${order.items.map(item => `
+            ${order.items ? order.items.map(item => `
               <div class="order-item">
                 <span>${item.name} (${item.quantity} × ${item.price} ج)</span>
                 <span>${(item.quantity * item.price).toFixed(2)} ج</span>
               </div>
-            `).join('')}
+            `).join('') : '<p>لا توجد عناصر</p>'}
           </div>
           
-          <div class="order-total">الإجمالي: ${order.total.toFixed(2)} ج</div>
+          <div class="order-total">الإجمالي: ${order.total ? order.total.toFixed(2) : '0.00'} ج</div>
           
           <div class="action-buttons">
             <button class="action-btn print-btn" onclick="printOrder('${order.id}')">طباعة</button>
@@ -604,10 +629,10 @@
       }, 3000);
     }
     
-    // تحديث حالة الطلب
+    // تحديث حالة الطلب (في المشروع الثاني)
     function updateOrderStatus(orderId, newStatus) {
       if (confirm(`هل أنت متأكد من تغيير حالة الطلب إلى "${newStatus}"؟`)) {
-        db.collection('orders').doc(orderId).update({
+        dbOrders.collection('orders').doc(orderId).update({
           status: newStatus,
           lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
         })
@@ -618,7 +643,7 @@
           if (newStatus === 'مكتمل') {
             const order = allOrders.find(o => o.id === orderId);
             if (order && order.userId) {
-              db.collection('notifications').add({
+              dbProducts.collection('notifications').add({
                 userId: order.userId,
                 orderId: orderId,
                 message: `تم إكمال طلبك رقم ${orderId}`,
@@ -639,7 +664,7 @@
     }
 
     function updateUserOrderHistory(userId, orderId, status) {
-      db.collection('users').doc(userId).get()
+      dbProducts.collection('users').doc(userId).get()
         .then(doc => {
           if (doc.exists) {
             const userData = doc.data();
@@ -655,16 +680,15 @@
             
             // إذا لم يكن الطلب موجوداً في سجل المستخدم نضيفه
             if (!updatedOrders.some(order => order.id === orderId)) {
-              // استخدام تاريخ محلي بدلاً من FieldValue.serverTimestamp()
               updatedOrders.push({
                 id: orderId,
                 status: status,
-                date: new Date().toISOString() // استخدام تاريخ محلي بدلاً من FieldValue
+                date: new Date().toISOString()
               });
             }
             
             // تحديث بيانات المستخدم
-            return db.collection('users').doc(userId).update({
+            return dbProducts.collection('users').doc(userId).update({
               orders: updatedOrders
             });
           }
@@ -674,10 +698,10 @@
         });
     }
     
-    // حذف طلب
+    // حذف طلب (من المشروع الثاني)
     function deleteOrder(orderId) {
       if (confirm('هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذه العملية.')) {
-        db.collection('orders').doc(orderId).delete()
+        dbOrders.collection('orders').doc(orderId).delete()
           .then(() => {
             showNotification('تم حذف الطلب بنجاح');
           })
@@ -688,10 +712,10 @@
       }
     }
     
-    // حذف جميع الطلبات المكتملة والملغية
+    // حذف جميع الطلبات المكتملة والملغية (من المشروع الثاني)
     function deleteAllCompletedAndCancelledOrders() {
       if (confirm('هل أنت متأكد من حذف جميع الطلبات المكتملة والملغية؟ لا يمكن التراجع عن هذه العملية.')) {
-        const batch = db.batch();
+        const batch = dbOrders.batch();
         const ordersToDelete = allOrders.filter(order => order.status === 'مكتمل' || order.status === 'ملغي');
         
         if (ordersToDelete.length === 0) {
@@ -700,7 +724,7 @@
         }
         
         ordersToDelete.forEach(order => {
-          const orderRef = db.collection('orders').doc(order.id);
+          const orderRef = dbOrders.collection('orders').doc(order.id);
           batch.delete(orderRef);
         });
         
@@ -717,87 +741,87 @@
     
     // طباعة الطلب
     function printOrder(orderId) {
-  const order = allOrders.find(o => o.id === orderId);
-  if (!order) return;
+      const order = allOrders.find(o => o.id === orderId);
+      deliveryDays = getUserDeliveryDays(order.customerPhone);
+      if (!order) return;
 
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html lang="ar" dir="rtl">
-    <head>
-      <meta charset="UTF-8">
-      <title>فاتورة ${order.id}</title>
-      <style>
-        @page {
-          size: auto;   /* خلي المقاس يعتمد على الطابعة */
-          margin: 2mm;
-        }
-        body {
-          font-family: "Tahoma", sans-serif;
-          font-size: 12px;
-          width: auto;
-          max-width: 80mm; /* يظبط نفسه لو 80 أو 58 */
-          margin: 0 auto;
-        }
-        .center { text-align: center; }
-        .bold { font-weight: bold; }
-        .line { border-top: 1px dashed #000; margin: 6px 0; }
-        table { width: 100%; border-collapse: collapse; margin: 5px 0; }
-      th, td { padding: 16px; text-align: center; font-size: 16px;border-bottom: 1px solid #000; margin: 15px ; }
-        th { border-bottom: 1px solid #000; }
-        .totals { margin-top: 8px; font-size: 12px; }
-        .footer { margin-top: 15px; text-align: center; font-size: 11px; }
-      </style>
-    </head>
-    <body onload="window.print(); window.close();">
-      <div class="center bold">شركة المصطفى لتصنيع اللحوم</div>
-      <div class="center">فاتورة مبيعات</div>
-      <div class="line"></div>
-      
-      <p><b>رقم الطلب:</b> ${order.id}</p>
-      <p><b>التاريخ:</b> ${order.formattedDate}</p>
-       <p style="font-size: 22px !important;"><b>العميل:</b> ${order.customerName}</p>
-      <p><b>الهاتف:</b> ${order.customerPhone}</p>
-      <p><b>العنوان:</b> ${order.customerAddress}</p>
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+          <meta charset="UTF-8">
+          <title>فاتورة ${order.id}</title>
+          
+          <style>
+            @page {
+              size: auto;
+              margin: 2mm;
+            }
+            body {
+              font-family: "Tahoma", sans-serif;
+              font-size: 12px;
+              width: auto;
+              max-width: 80mm;
+              margin: 0 auto;
+            }
+            .center { text-align: center; }
+            .bold { font-weight: bold; }
+            .line { border-top: 1px dashed #000; margin: 6px 0; }
+            table { width: 100%; border-collapse: collapse; margin: 5px 0; }
+            th, td { padding: 16px; text-align: center; font-size: 16px;border-bottom: 1px solid #000; margin: 15px ; }
+            th { border-bottom: 1px solid #000; }
+            .totals { margin-top: 8px; font-size: 12px; }
+            .footer { margin-top: 15px; text-align: center; font-size: 11px; }
+          </style>
+        </head>
+        <body onload="window.print(); window.close();">
+          <div class="center bold">شركة المصطفى لتصنيع اللحوم</div>
+          <div class="center">فاتورة مبيعات</div>
+          <div class="line"></div>
+          
+          <p><b>رقم الطلب:</b> ${order.id}</p>
+          <p><b> ايام التوصيل :</b> ${deliveryDays}</p>
+          
+          <p><b>التاريخ:</b> ${order.formattedDate}</p>
+          <p style="font-size: 22px !important;"><b>العميل:</b> ${order.customerName || 'غير معروف'}</p>
+          <p><b>الهاتف:</b> ${order.customerPhone || 'غير معروف'}</p>
+          <p><b>العنوان:</b> ${order.customerAddress || 'غير محدد'}</p>
 
-      <div class="line"></div>
-      <table>
-        <thead>
-          <tr>
-          <th>الكمية</th>
-            <th>الصنف</th>
-            
-            
-          </tr>
-        </thead>
-        <tbody>
-          ${order.items.map(item => `
-            <tr>
-            <td>${item.quantity}</td>
-              <td>${item.name}</td>
-              
-             
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+          <div class="line"></div>
+          <table>
+            <thead>
+              <tr>
+                <th>الكمية</th>
+                <th>الصنف</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${order.items ? order.items.map(item => `
+                <tr>
+                  <td>${item.quantity}</td>
+                  <td>${item.name}</td>
+                </tr>
+              `).join('') : '<tr><td colspan="2">لا توجد عناصر</td></tr>'}
+            </tbody>
+          </table>
 
-      <div class="line"></div>
-      <div class="totals">
-        <p><b>الإجمالي:</b> ${order.total.toFixed(2)} ج</p>
-      </div>
+          <div class="line"></div>
+          <div class="totals">
+            <p><b>الإجمالي:</b> ${order.total ? order.total.toFixed(2) : '0.00'} ج</p>
+          </div>
 
-      ${order.notes ? `<p><b>ملاحظات:</b> ${order.notes}</p>` : ''}
+          ${order.notes ? `<p><b>ملاحظات:</b> ${order.notes}</p>` : ''}
 
-      <div class="footer">
-        <p>شكراً لثقتكم بشركة المصطفى</p>
-        <p>للاستفسار: 01080988112</p>
-      </div>
-    </body>
-    </html>
-  `);
-  printWindow.document.close();
-}
+          <div class="footer">
+            <p>شكراً لثقتكم بشركة المصطفى</p>
+            <p>للاستفسار: 01080988112</p>
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
 
     // دالة تجميع جميع الطلبات
     function calculateAllOrders() {
@@ -810,7 +834,7 @@
         if (!order.items) return;
         
         order.items.forEach(item => {
-          const productName = item.name.trim();
+          const productName = item.name ? item.name.trim() : 'غير معروف';
           
           if (!allProductsAggregation[productName]) {
             allProductsAggregation[productName] = {
@@ -942,7 +966,6 @@
               <tr>
                 <th>اسم المنتج</th>
                 <th>الكمية الكلية</th>
-                
               </tr>
             </thead>
             <tbody>
@@ -970,7 +993,6 @@
           <tr class="mustafa-row">
             <td>${productName}</td>
             <td>${data.totalQuantity}</td>
-            
           </tr>
         `;
       });
@@ -981,7 +1003,6 @@
           <tr>
             <td>${productName}</td>
             <td>${data.totalQuantity}</td>
-            
           </tr>
         `;
       });
@@ -1023,138 +1044,127 @@
     }
     
     // دالة حساب الربح اليومي
-  // دالة حساب الربح اليومي
-async function calculateDailyProfit() {
-  const dateInput = document.getElementById('profit-date').value;
-  if (!dateInput) {
-    showNotification('يرجى اختيار تاريخ', false);
-    return;
-  }
-  
-  // إظهار مؤشر التحميل
-  document.getElementById('profit-loading').style.display = 'block';
-  document.getElementById('profit-details').innerHTML = '';
-  
-  const selectedDate = new Date(dateInput);
-  const nextDay = new Date(selectedDate);
-  nextDay.setDate(nextDay.getDate() + 1);
-  
-  try {
-    // جلب جميع الطلبات المكتملة ثم التصفية محلياً
-    const ordersSnapshot = await db.collection('orders')
-      .where('status', '==', 'مكتمل')
-      .get();
-    
-    const orders = [];
-    ordersSnapshot.forEach(doc => {
-      const order = doc.data();
-      order.id = doc.id;
-      
-      // تحقق من التاريخ محلياً بدلاً من استخدام استعلام Firebase المركب
-      if (order.timestamp && order.timestamp.toDate) {
-        const orderDate = order.timestamp.toDate();
-        if (orderDate >= selectedDate && orderDate < nextDay) {
-          orders.push(order);
-        }
+    async function calculateDailyProfit() {
+      const dateInput = document.getElementById('profit-date').value;
+      if (!dateInput) {
+        showNotification('يرجى اختيار تاريخ', false);
+        return;
       }
-    });
-    
-    // جلب بيانات المنتجات (لأسعار الشراء) - باستخدام الحقل cost
-    const productsSnapshot = await db.collection('products').get();
-    const products = {};
-    
-    // إنشاء خريطة للمنتجات باستخدام الاسم كمعرف
-    productsSnapshot.forEach(doc => {
-      const productData = doc.data();
-      const productName = productData.name || doc.id;
       
-      // تخزين بيانات المنتج باستخدام الاسم كمعرف
-      products[productName] = {
-        cost: productData.cost || 0,
-        name: productName,
-        id: doc.id
-      };
+      // إظهار مؤشر التحميل
+      document.getElementById('profit-loading').style.display = 'block';
+      document.getElementById('profit-details').innerHTML = '';
       
-      // أيضاً تخزين باستخدام المعرف الأصلي للتوافق
-      products[doc.id] = {
-        cost: productData.cost || 0,
-        name: productName,
-        id: doc.id
-      };
-    });
-    
-    // تجميع بيانات الربح
-    const profitData = {};
-    let totalProfit = 0;
-    
-    orders.forEach(order => {
-      if (!order.items) return;
+      const selectedDate = new Date(dateInput);
+      const nextDay = new Date(selectedDate);
+      nextDay.setDate(nextDay.getDate() + 1);
       
-      order.items.forEach(item => {
-        const productName = item.name;
-        const productData = products[productName] || { cost: 0, name: productName };
-        const cost = productData.cost || 0;
-        const salePrice = item.price || 0;
-        const quantity = item.quantity || 0;
-        const unitProfit = salePrice - cost;
-        const itemProfit = unitProfit * quantity;
+      try {
+        // جلب جميع الطلبات المكتملة من المشروع الثاني ثم التصفية محلياً
+        const ordersSnapshot = await dbOrders.collection('orders')
+          .where('status', '==', 'مكتمل')
+          .get();
         
-        if (!profitData[productName]) {
-          profitData[productName] = {
+        const orders = [];
+        ordersSnapshot.forEach(doc => {
+          const order = doc.data();
+          order.id = doc.id;
+          
+          // تحقق من التاريخ محلياً
+          if (order.timestamp && order.timestamp.toDate) {
+            const orderDate = order.timestamp.toDate();
+            if (orderDate >= selectedDate && orderDate < nextDay) {
+              orders.push(order);
+            }
+          }
+        });
+        
+        // جلب بيانات المنتجات (لأسعار الشراء) من المشروع الأول
+        const productsSnapshot = await dbProducts.collection('products').get();
+        const products = {};
+        
+        // إنشاء خريطة للمنتجات باستخدام الاسم كمعرف
+        productsSnapshot.forEach(doc => {
+          const productData = doc.data();
+          const productName = productData.name || doc.id;
+          
+          // تخزين بيانات المنتج باستخدام الاسم كمعرف
+          products[productName] = {
+            cost: productData.cost || 0,
             name: productName,
-            quantity: 0,
-            salePrice: salePrice,
-            cost: cost,
-            unitProfit: unitProfit,
-            totalProfit: 0
+            id: doc.id
           };
-        }
+          
+          // أيضاً تخزين باستخدام المعرف الأصلي للتوافق
+          products[doc.id] = {
+            cost: productData.cost || 0,
+            name: productName,
+            id: doc.id
+          };
+        });
         
-        profitData[productName].quantity += quantity;
-        profitData[productName].totalProfit += itemProfit;
-        totalProfit += itemProfit;
+        // تجميع بيانات الربح
+        const profitData = {};
+        let totalProfit = 0;
         
-        // طباعة معلومات التصحيح في الكونسول
-        console.log('منتج:', productName, 'سعر الشراء:', cost, 'سعر البيع:', salePrice, 
-                    'الكمية:', quantity, 'ربح الوحدة:', unitProfit, 'ربح العنصر:', itemProfit);
-      });
-    });
+        orders.forEach(order => {
+          if (!order.items) return;
+          
+          order.items.forEach(item => {
+            const productName = item.name;
+            const productData = products[productName] || { cost: 0, name: productName };
+            const cost = productData.cost || 0;
+            const salePrice = item.price || 0;
+            const quantity = item.quantity || 0;
+            const unitProfit = salePrice - cost;
+            const itemProfit = unitProfit * quantity;
+            
+            if (!profitData[productName]) {
+              profitData[productName] = {
+                name: productName,
+                quantity: 0,
+                salePrice: salePrice,
+                cost: cost,
+                unitProfit: unitProfit,
+                totalProfit: 0
+              };
+            }
+            
+            profitData[productName].quantity += quantity;
+            profitData[productName].totalProfit += itemProfit;
+            totalProfit += itemProfit;
+          });
+        });
+        
+        // عرض بيانات الربح
+        const profitDetails = document.getElementById('profit-details');
+        profitDetails.innerHTML = '';
+        
+        Object.keys(profitData).forEach(productName => {
+          const data = profitData[productName];
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${data.name}</td>
+            <td>${data.quantity}</td>
+            <td>${data.salePrice.toFixed(2)} ج</td>
+            <td>${data.cost.toFixed(2)} ج</td>
+            <td>${data.unitProfit.toFixed(2)} ج</td>
+            <td>${data.totalProfit.toFixed(2)} ج</td>
+          `;
+          profitDetails.appendChild(row);
+        });
+        
+        document.getElementById('total-profit').textContent = totalProfit.toFixed(2);
+        
+      } catch (error) {
+        console.error('Error calculating daily profit:', error);
+        showNotification('حدث خطأ أثناء حساب الربح اليومي', false);
+      } finally {
+        // إخفاء مؤشر التحميل
+        document.getElementById('profit-loading').style.display = 'none';
+      }
+    }
     
-    // عرض بيانات الربح
-    const profitDetails = document.getElementById('profit-details');
-    profitDetails.innerHTML = '';
-    
-    Object.keys(profitData).forEach(productName => {
-      const data = profitData[productName];
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${data.name}</td>
-        <td>${data.quantity}</td>
-        <td>${data.salePrice.toFixed(2)} ج</td>
-        <td>${data.cost.toFixed(2)} ج</td>
-        <td>${data.unitProfit.toFixed(2)} ج</td>
-        <td>${data.totalProfit.toFixed(2)} ج</td>
-      `;
-      profitDetails.appendChild(row);
-    });
-    
-    document.getElementById('total-profit').textContent = totalProfit.toFixed(2);
-    
-    // طباعة جميع المنتجات المتاحة للتصحيح
-    console.log('جميع المنتجات في النظام:');
-    productsSnapshot.forEach(doc => {
-      const productData = doc.data();
-      console.log('معرف:', doc.id, 'بيانات:', productData);
-    });
-    
-  } catch (error) {
-    console.error('Error calculating daily profit:', error);
-    showNotification('حدث خطأ أثناء حساب الربح اليومي', false);
-  } finally {
-    // إخفاء مؤشر التحميل
-    document.getElementById('profit-loading').style.display = 'none';
-  }
-}
     // دالة تصدير تقرير الربح إلى Excel
     function exportProfitReport() {
       const dateInput = document.getElementById('profit-date').value;
@@ -1213,5 +1223,4 @@ async function calculateDailyProfit() {
   <!-- مكتبة SheetJS لتصدير Excel -->
   <script src="https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js"></script>
 </body>
-
 </html>
