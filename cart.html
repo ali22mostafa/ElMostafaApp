@@ -68,6 +68,11 @@
       cursor: pointer;
       margin: 0 5px;
     }
+    .quantity-btn:disabled {
+      background-color: #666;
+      color: #999;
+      cursor: not-allowed;
+    }
     .quantity-input {
       width: 50px;
       height: 30px;
@@ -129,14 +134,99 @@
     .back-btn:hover {
       background-color: #1565c0;
     }
+    
+    .stock-info {
+      color: #4CAF50;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    
+    .max-order-info {
+      color: #ff9800;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    
+    .error-message {
+      background-color: #ff3333;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      text-align: center;
+      display: none;
+    }
+    
+    .success-message {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      text-align: center;
+      display: none;
+    }
+    
+    .warning-message {
+      background-color: #ff9800;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      text-align: center;
+    }
+    
+    .cache-status {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.7);
+      color: #4CAF50;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      z-index: 1000;
+      display: none !important;
+    }
+    
+    .no-firebase-warning {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      text-align: center;
+      font-weight: bold;
+      border: 2px solid #fff;
+      animation: pulseWarning 2s infinite;
+    }
+    
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.3) rotate(-10deg); }
+      50% { opacity: 1; transform: scale(1.1) rotate(5deg); }
+      70% { transform: scale(0.95) rotate(-2deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 0, 0.7); }
+      50% { transform: scale(1.05); }
+      70% { box-shadow: 0 0 0 15px rgba(255, 255, 0, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 0, 0); }
+    }
+    
+    @keyframes pulseWarning {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
   </style>
-    <style>
+  <style>
     input,
-textarea,
-select {
-  font-size: 16px; /* يمنع الزوم على الموبايل */
-}
-
+    textarea,
+    select {
+      font-size: 16px; /* يمنع الزوم على الموبايل */
+    }
   </style>
 </head>
 <body>
@@ -147,6 +237,14 @@ select {
 
   <div class="container">
     <h1>سلة التسوق</h1>
+    
+    <div style="display: none;" class="no-firebase-warning">
+      ⚡ النظام يعمل محلياً بالكامل - لا اتصال بالسيرفر
+    </div>
+    
+    <div id="error-message" class="error-message"></div>
+    <div id="success-message" class="success-message"></div>
+    
     <div id="cart-items-container">
       <!-- سيتم ملء العناصر هنا عبر JavaScript -->
     </div>
@@ -156,362 +254,499 @@ select {
     </div>
     <div id="total-section" class="total-section" style="display: none;">
       <h3>الإجمالي: <span id="cart-total">0</span> جنيهاً</h3>
-      <button class="checkout-btn"             onclick="proceedToCheckout()"     onclick="proceedToCheckout()">تأكيد الطلب</button>
+      <button class="checkout-btn" onclick="cartManager.proceedToCheckout()">تأكيد الطلب</button>
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
- <script>
-  // تكوين Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyBKtxMNJ3n_YIsy671sbhlk8Qm1yt5uSB4",
-    authDomain: "mostafa-products.firebaseapp.com",
-    projectId: "mostafa-products",
-    storageBucket: "mostafa-products.firebasestorage.app",
-    messagingSenderId: "841270845665",
-    appId: "1:841270845665:web:f2f857112688b8b8be57a0"
-  };
+  <div class="cache-status" id="cache-status">✅ النظام يعمل محلياً</div>
 
-  // تهيئة Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  // متغيرات سلة التسوق
-  let cart = JSON.parse(localStorage.getItem('cart')) || [];
-  
-  // عرض محتويات السلة
-  function displayCart() {
-    const cartItemsContainer = document.getElementById('cart-items-container');
-    const emptyCartMessage = document.getElementById('empty-cart-message');
-    const totalSection = document.getElementById('total-section');
+  <script>
+    // =============================================
+    // 🚀 نظام السلة المحلي بالكامل - بدون فايربيز!
+    // =============================================
     
-    if (cart.length === 0) {
-      cartItemsContainer.innerHTML = '';
-      emptyCartMessage.style.display = 'block';
-      totalSection.style.display = 'none';
-      return;
-    }
-    
-    emptyCartMessage.style.display = 'none';
-    totalSection.style.display = 'block';
-    
-    cartItemsContainer.innerHTML = '';
-    let total = 0;
-    
-    cart.forEach((item, index) => {
-      const itemElement = document.createElement('div');
-      itemElement.className = 'cart-item';
-      itemElement.innerHTML = `
-        <div class="item-info">
-          <h3>${item.name}</h3>
-          <p>السعر: ${item.price} ج</p>
-        </div>
-        <div class="item-controls">
-          <div class="quantity-controls">
-            <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">-</button>
-            <input type="number" class="quantity-input" value="${item.quantity}" min="1" 
-                   onchange="updateQuantityDirect(${index}, this.value)" 
-                   oninput="validateQuantity(this)">
-            <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
-          </div>
-          <button class="remove-btn" onclick="removeItem(${index})">حذف</button>
-        </div>
-      `;
-      cartItemsContainer.appendChild(itemElement);
+    class CartManager {
+      constructor() {
+        this.cart = JSON.parse(localStorage.getItem('cart')) || [];
+        this.productsCache = null;
+        this.cacheTimestamp = 0;
+        this.init();
+      }
       
-      total += parseFloat(item.price) * item.quantity;
-    });
-    
-    document.getElementById('cart-total').textContent = total.toFixed(2);
-  }
-  
-  // التحقق من صحة الكمية المدخلة
-  function validateQuantity(input) {
-    if (input.value < 1) {
-      input.value = 1;
-    }
-  }
-  
-  // تحديث الكمية مباشرة من خانة الإدخال
-
-function updateQuantityDirect(index, newQuantity) {
-  newQuantity = parseInt(newQuantity);
-  const item = cart[index];
-  
-  if (newQuantity >= 1) {
-    // التحقق من الحد الأقصى للطلب والمخزون المتاح
-    db.collection("products").doc(item.id).get().then(doc => {
-      if (doc.exists) {
-        const productData = doc.data();
+      init() {
+        console.log('🚀 بدء نظام السلة المحلي...');
+        this.loadProductsFromCache();
+        this.displayCart();
+        this.updateCacheStatus();
+      }
+      
+      // 🔍 جلب البيانات من localStorage فقط
+      loadProductsFromCache() {
+        try {
+          const cacheData = localStorage.getItem('products_cache');
+          if (!cacheData) {
+            this.showError('❌ لم يتم تحميل المنتجات بعد. الرجاء:<br>1. العودة إلى المتجر<br>2. الانتظار حتى تحميل المنتجات<br>3. العودة للسلة');
+            return false;
+          }
+          
+          const parsed = JSON.parse(cacheData);
+          this.productsCache = new Map(parsed.data || []);
+          this.cacheTimestamp = parsed.timestamp || 0;
+          
+          console.log(`✅ تم تحميل ${this.productsCache.size} منتج من التخزين المحلي`);
+          return true;
+          
+        } catch (error) {
+          console.error('❌ خطأ في تحميل البيانات المخزنة:', error);
+          this.showError('❌ خطأ في تحميل البيانات المحلية');
+          return false;
+        }
+      }
+      
+      // 📊 تحديث حالة الكاش
+      updateCacheStatus() {
+        const statusEl = document.getElementById('cache-status');
+        if (!statusEl) return;
         
-        if (productData.maxOrder > 0 && newQuantity > productData.maxOrder) {
-          alert(`الحد الأقصى للطلب هو ${productData.maxOrder} وحدة`);
-          document.querySelectorAll('.quantity-input')[index].value = item.quantity;
+        if (!this.productsCache) {
+          statusEl.textContent = '❌ لا يوجد بيانات';
+          statusEl.style.color = '#ff3333';
           return;
         }
         
-        if (productData.stock < newQuantity) {
-          alert(`لا يوجد مخزون كافي. المتاح: ${productData.stock} وحدة`);
-          document.querySelectorAll('.quantity-input')[index].value = item.quantity;
+        const cacheAge = Date.now() - this.cacheTimestamp;
+        const minutes = Math.floor(cacheAge / 60000);
+        const hours = Math.floor(minutes / 60);
+        
+        if (minutes < 5) {
+          statusEl.textContent = '✅ بيانات حديثة جداً';
+          statusEl.style.color = '#4CAF50';
+        } else if (minutes < 60) {
+          statusEl.textContent = `✅ بيانات حديثة (${minutes} دقيقة)`;
+          statusEl.style.color = '#4CAF50';
+        } else if (hours < 24) {
+          statusEl.textContent = `⚠️ بيانات منذ ${hours} ساعة`;
+          statusEl.style.color = '#ff9800';
+        } else {
+          statusEl.textContent = `⛔ بيانات قديمة (${hours} ساعة)`;
+          statusEl.style.color = '#ff3333';
+        }
+      }
+      
+      // 🔍 البحث عن منتج في الكاش
+      getProductFromCache(productId) {
+        if (!this.productsCache) {
+          if (!this.loadProductsFromCache()) {
+            return null;
+          }
+        }
+        
+        if (!this.productsCache || !this.productsCache.has(productId)) {
+          console.warn(`⚠️ المنتج ${productId} غير موجود في الكاش`);
+          return null;
+        }
+        
+        return this.productsCache.get(productId);
+      }
+      
+      // 📋 التحقق من المنتج باستخدام البيانات المحلية فقط
+      validateProduct(productId, requestedQuantity, currentQuantity = 0) {
+        const productData = this.getProductFromCache(productId);
+        if (!productData) {
+          return {
+            valid: false,
+            message: 'المنتج غير متوفر في البيانات المحلية',
+            stock: 0,
+            maxOrder: 0
+          };
+        }
+        
+        const finalQuantity = currentQuantity + requestedQuantity;
+        
+        // 1. التحقق من توفر المنتج
+        if (productData.available === false) {
+          return {
+            valid: false,
+            message: '⛔ هذا المنتج غير متوفر حالياً',
+            stock: 0,
+            maxOrder: 0
+          };
+        }
+        
+        // 2. التحقق من الحد الأقصى للطلب
+        if (productData.maxOrder > 0 && finalQuantity > productData.maxOrder) {
+          return {
+            valid: false,
+            message: `🚫 الحد الأقصى للطلب هو ${productData.maxOrder} وحدة`,
+            stock: productData.stock || 0,
+            maxOrder: productData.maxOrder
+          };
+        }
+        
+        // 3. التحقق من المخزون
+        if (!productData.unlimitedStock && productData.stock !== undefined) {
+          if (finalQuantity > productData.stock) {
+            return {
+              valid: false,
+              message: `⚠️ لا يوجد مخزون كافي. المتاح: ${productData.stock} وحدة`,
+              stock: productData.stock,
+              maxOrder: productData.maxOrder || 0
+            };
+          }
+        }
+        
+        return {
+          valid: true,
+          message: '',
+          stock: productData.stock || 0,
+          maxOrder: productData.maxOrder || 0,
+          price: productData.price,
+          name: productData.name
+        };
+      }
+      
+      // 📝 عرض السلة (بدون فايربيز)
+      displayCart() {
+        const cartItemsContainer = document.getElementById('cart-items-container');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+        const totalSection = document.getElementById('total-section');
+        
+        if (this.cart.length === 0) {
+          cartItemsContainer.innerHTML = '';
+          emptyCartMessage.style.display = 'block';
+          totalSection.style.display = 'none';
+          this.updateCacheStatus();
           return;
         }
         
-        cart[index].quantity = newQuantity;
-        saveCart();
-        displayCart();
-      }
-    });
-  }
-}
-
-function updateQuantity(index, change) {
-  const item = cart[index];
-  
-  // التحقق من الحد الأقصى للطلب والمخزون المتاح
-  db.collection("products").doc(item.id).get().then(doc => {
-    if (doc.exists) {
-      const productData = doc.data();
-      const newQuantity = item.quantity + change;
-      
-      if (productData.maxOrder > 0 && newQuantity > productData.maxOrder) {
-        alert(`الحد الأقصى للطلب هو ${productData.maxOrder} وحدة`);
-        return;
-      }
-      
-      if (productData.stock < newQuantity) {
-        alert(`لا يوجد مخزون كافي. المتاح: ${productData.stock} وحدة`);
-        return;
-      }
-      
-      if (newQuantity >= 1) {
-        cart[index].quantity = newQuantity;
-        saveCart();
-        displayCart();
-      } else if (newQuantity <= 0) {
-        cart.splice(index, 1);
-        saveCart();
-        displayCart();
-      }
-    }
-  });
-}
-  // إزالة عنصر
-  function removeItem(index) {
-    cart.splice(index, 1);
-    saveCart();
-    displayCart();
-  }
-  
-  // حفظ السلة في localStorage
-  function saveCart() {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }
-  
-  // التوجيه إلى صفحة الدفع
-  function proceedToCheckout() {
-    window.location.href = 'checkout.html';
-  }
-  
-  // تهيئة الصفحة
-  document.addEventListener('DOMContentLoaded', () => {
-    displayCart();
-  });
-</script>
-
-<script>
-  function updateCartDataFromFirebase() {
-    if (cart.length === 0) return;
-
-    const productIds = cart.map(item => item.id);
-    
-    db.collection("products").get().then(snapshot => {
-      snapshot.forEach(doc => {
-        const productId = doc.id;
-        const productData = doc.data();
-
-        const cartItem = cart.find(item => item.id === productId);
-        if (cartItem) {
-          if (productData.price) {
-            cartItem.price = parseFloat(productData.price);
-          }
-          if (productData.name) {
-            cartItem.name = productData.name;
-          }
+        emptyCartMessage.style.display = 'none';
+        totalSection.style.display = 'block';
+        
+        cartItemsContainer.innerHTML = '';
+        let total = 0;
+        let hasErrors = false;
+        
+        this.cart.forEach((item, index) => {
+          const productData = this.getProductFromCache(item.id) || {};
+          const validation = this.validateProduct(item.id, 0, item.quantity);
+          
+          const itemElement = document.createElement('div');
+          itemElement.className = 'cart-item';
+          itemElement.innerHTML = `
+            <div class="item-info">
+              <h3>${item.name}</h3>
+              <p>السعر: ${item.price} ج</p>
+              ${productData.stock !== undefined ? 
+                `<div class="stock-info">📦 المخزون: ${productData.stock} وحدة</div>` : ''}
+              ${productData.maxOrder ? 
+                `<div class="max-order-info">📊 الحد الأقصى: ${productData.maxOrder} وحدة</div>` : ''}
+              ${!validation.valid ? 
+                `<div style="color:#ff3333; font-size:12px; margin-top:5px;">${validation.message}</div>` : ''}
+            </div>
+            <div class="item-controls">
+              <div class="quantity-controls">
+                <button class="quantity-btn" 
+                        onclick="cartManager.updateQuantity(${index}, -1)"
+                        ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
+                <input type="number" class="quantity-input" value="${item.quantity}" min="1" 
+                       onchange="cartManager.updateQuantityDirect(${index}, this.value)" 
+                       oninput="cartManager.validateInput(this)">
+                <button class="quantity-btn" 
+                        onclick="cartManager.updateQuantity(${index}, 1)"
+                        ${!validation.valid ? 'disabled' : ''}>+</button>
+              </div>
+              <button class="remove-btn" onclick="cartManager.removeItem(${index})">🗑️ حذف</button>
+            </div>
+          `;
+          cartItemsContainer.appendChild(itemElement);
+          
+          if (!validation.valid) hasErrors = true;
+          
+          total += parseFloat(item.price) * item.quantity;
+        });
+        
+        document.getElementById('cart-total').textContent = total.toFixed(2);
+        this.updateCacheStatus();
+        
+        // تعطيل زر التأكيد إذا كان هناك أخطاء
+        const checkoutBtn = document.querySelector('.checkout-btn');
+        if (checkoutBtn) {
+          checkoutBtn.disabled = hasErrors;
+          checkoutBtn.style.opacity = hasErrors ? '0.5' : '1';
+          checkoutBtn.style.cursor = hasErrors ? 'not-allowed' : 'pointer';
         }
-      });
-
-      saveCart();
-      displayCart();
-    }).catch(error => {
-      console.error("❌ خطأ في تحميل البيانات من فايربيز:", error);
-    });
-  }
-
-  // استدعاء الوظيفة عند تحميل الصفحة
-  document.addEventListener('DOMContentLoaded', () => {
-    updateCartDataFromFirebase();
-  });
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- <script>
-  // التحقق من المنتجات المطلوبة والكميات قبل المتابعة للدفع
-function validateRequiredProducts() {
-    const requiredProduct = 'basma-molokhia';
-    const complementaryProducts = [
-        'basma-taro', 'basma-beans', ,
-        'basma-mixed-veg', 'basma-peas-carrots', 'basma-peas-plain', 'basma-veg-soup',
-        'basma-okra-premium', 'basma-okra-zero', 'basma-okra-extra', 'basma-okra-grapes',
-        'basma-okra-strewBerry', 'basma-spinach'
-    ];
-    
-    // البحث عن منتج الملوخية في السلة
-    const molokhiaItem = cart.find(item => item.id === requiredProduct);
-    
-    // التحقق من وجود المنتج المطلوب (basma-molokhia)
-    if (!molokhiaItem) {
-        return { isValid:true,  };
-    }
-    
-    const molokhiaQuantity = molokhiaItem.quantity;
-    
-    // البحث عن المنتجات التكميلية في السلة
-    const complementaryItems = cart.filter(item => 
-        complementaryProducts.includes(item.id) && item.id !== requiredProduct
-    );
-    
-    // التحقق من وجود منتج واحد على الأقل من المنتجات التكميلية
-    if (complementaryItems.length === 0) {
-        return { 
+      }
+      
+      // 🔢 تحديث الكمية (بدون فايربيز)
+      updateQuantity(index, change) {
+        const item = this.cart[index];
+        if (!item) return;
+        
+        const newQuantity = item.quantity + change;
+        
+        if (newQuantity < 1) {
+          this.removeItem(index);
+          return;
+        }
+        
+        // التحقق المحلي فقط
+        const validation = this.validateProduct(item.id, change, item.quantity);
+        
+        if (!validation.valid) {
+          this.showError(validation.message);
+          return;
+        }
+        
+        // تحديث الكمية
+        this.cart[index].quantity = newQuantity;
+        this.saveCart();
+        this.displayCart();
+        
+        if (change > 0) {
+          this.showSuccess(`✅ تم زيادة ${item.name} إلى ${newQuantity} وحدة`);
+        } else {
+          this.showSuccess(`✅ تم تقليل ${item.name} إلى ${newQuantity} وحدة`);
+        }
+      }
+      
+      // ⌨️ تحديث الكمية يدوياً (بدون فايربيز)
+      updateQuantityDirect(index, newQuantity) {
+        newQuantity = parseInt(newQuantity);
+        const item = this.cart[index];
+        if (!item || isNaN(newQuantity)) return;
+        
+        if (newQuantity < 1) {
+          this.removeItem(index);
+          return;
+        }
+        
+        const change = newQuantity - item.quantity;
+        
+        // التحقق المحلي فقط
+        const validation = this.validateProduct(item.id, change, item.quantity);
+        
+        if (!validation.valid) {
+          this.showError(validation.message);
+          // إعادة القيمة السابقة
+          const inputs = document.querySelectorAll('.quantity-input');
+          if (inputs[index]) inputs[index].value = item.quantity;
+          return;
+        }
+        
+        this.cart[index].quantity = newQuantity;
+        this.saveCart();
+        this.displayCart();
+        this.showSuccess(`✅ تم تحديث كمية ${item.name} إلى ${newQuantity}`);
+      }
+      
+      // ✅ التحقق من صحة الإدخال
+      validateInput(input) {
+        if (input.value < 1) {
+          input.value = 1;
+        }
+      }
+      
+      // 🗑️ إزالة عنصر
+      removeItem(index) {
+        const item = this.cart[index];
+        if (!item) return;
+        
+        if (confirm(`هل تريد حذف "${item.name}" من السلة؟`)) {
+          this.cart.splice(index, 1);
+          this.saveCart();
+          this.displayCart();
+          this.showSuccess(`🗑️ تم حذف ${item.name} من السلة`);
+        }
+      }
+      
+      // 💾 حفظ السلة
+      saveCart() {
+        localStorage.setItem('cart', JSON.stringify(this.cart));
+        console.log('💾 تم حفظ السلة في التخزين المحلي');
+      }
+      
+      // 📊 التحقق من المنتجات المطلوبة (ملوخية بسمة)
+      validateRequiredProducts() {
+        const requiredProduct = 'basma-molokhia';
+        const complementaryProducts = [
+          'basma-taro', 'basma-beans', 'basma-mixed-veg', 
+          'basma-peas-carrots', 'basma-peas-plain', 'basma-veg-soup',
+          'basma-okra-premium', 'basma-okra-zero', 'basma-okra-extra', 
+          'basma-okra-grapes', 'basma-okra-strewBerry', 'basma-spinach'
+        ];
+        
+        // البحث عن منتج الملوخية في السلة
+        const molokhiaItem = this.cart.find(item => item.id === requiredProduct);
+        
+        // إذا لم تكن هناك ملوخية، يمكن المتابعة مباشرة
+        if (!molokhiaItem) {
+          return { isValid: true, message: "" };
+        }
+        
+        const molokhiaQuantity = molokhiaItem.quantity;
+        
+        // البحث عن المنتجات التكميلية في السلة
+        const complementaryItems = this.cart.filter(item => 
+          complementaryProducts.includes(item.id) && item.id !== requiredProduct
+        );
+        
+        // التحقق من وجود منتج واحد على الأقل من المنتجات التكميلية
+        if (complementaryItems.length === 0) {
+          return { 
             isValid: false, 
-            message: "            لقد طلبت ملوخيه بسمه فقط يجب طلب اي منتج اخر من خضروات بسمه بنفس كميه الملوخيه او ذياده " 
-        };
-    }
-    
-    // التحقق من أن إجمالي كميات المنتجات التكميلية >= كمية الملوخية
-    const totalComplementaryQuantity = complementaryItems.reduce((total, item) => {
-        return total + item.quantity;
-    }, 0);
-    
-    if (totalComplementaryQuantity < molokhiaQuantity) {
-        return { 
+            message: '⚠️ لقد طلبت ملوخية بسمة فقط. يجب طلب أي منتج آخر من خضروات بسمة بنفس كمية الملوخية أو زيادة'
+          };
+        }
+        
+        // التحقق من أن إجمالي كميات المنتجات التكميلية >= كمية الملوخية
+        const totalComplementaryQuantity = complementaryItems.reduce((total, item) => {
+          return total + item.quantity;
+        }, 0);
+        
+        if (totalComplementaryQuantity < molokhiaQuantity) {
+          return { 
             isValid: false, 
-            message: `إجمالي كميه خضراوات بسمة المطلوبه (${totalComplementaryQuantity}) يجب أن يكون مساوي أو أكبر من كمية الملوخية (${molokhiaQuantity})`
-        };
-    }
-    
-    return { isValid: true, message: "" };
-}
-
-// وظيفة المتابعة إلى الدفع مع التحقق
-function proceedToCheckout() {
-    // التحقق أولاً من المنتجات المطلوبة والكميات
-    const validation = validateRequiredProducts();
-    
-    if (!validation.isValid) {
-        alert(validation.message);
-        return; // لا تتابع إذا فشل التحقق
-    }
-    
-    // إذا اجتازت المنتجات التحقق، تابع إلى صفحة الدفع
-    window.location.href = 'checkout.html';
-}
-</script> -->
-
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-// التحقق من المنتجات المطلوبة والكميات قبل المتابعة للدفع
-function validateRequiredProducts() {
-    const requiredProduct = 'basma-molokhia';
-    const complementaryProducts = [
-        'basma-taro', 'basma-beans', 'basma-mixed-veg', 
-        'basma-peas-carrots', 'basma-peas-plain', 'basma-veg-soup',
-        'basma-okra-premium', 'basma-okra-zero', 'basma-okra-extra', 
-        'basma-okra-grapes', 'basma-okra-strewBerry', 'basma-spinach'
-    ];
-    
-    // البحث عن منتج الملوخية في السلة
-    const molokhiaItem = cart.find(item => item.id === requiredProduct);
-    
-    // إذا لم تكن هناك ملوخية، يمكن المتابعة مباشرة (الشرط لا ينطبق)
-    if (!molokhiaItem) {
+            message: '⚠️ إجمالي كمية خضروات بسمة المطلوبة يجب أن يكون مساوي أو أكبر من كمية الملوخية'
+          };
+        }
+        
         return { isValid: true, message: "" };
-    }
-    
-    const molokhiaQuantity = molokhiaItem.quantity;
-    
-    // البحث عن المنتجات التكميلية في السلة
-    const complementaryItems = cart.filter(item => 
-        complementaryProducts.includes(item.id) && item.id !== requiredProduct
-    );
-    
-    // التحقق من وجود منتج واحد على الأقل من المنتجات التكميلية
-    if (complementaryItems.length === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'تنبيه',
-            text: 'لقد طلبت ملوخية بسمة فقط. يجب طلب أي منتج آخر من خضروات بسمة بنفس كمية الملوخية أو زيادة',
-            confirmButtonText: 'حسناً',
-            confirmButtonColor: '#ffc107'
+      }
+      
+      // 🛒 المتابعة للدفع (بدون فايربيز)
+      proceedToCheckout() {
+        // 1. التحقق من تسجيل الدخول
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+          this.showError('🔒 يجب تسجيل الدخول لإتمام الطلب');
+          setTimeout(() => window.location.href = 'login.html', 2000);
+          return;
+        }
+        
+        // 2. التحقق من وجود منتجات
+        if (this.cart.length === 0) {
+          this.showError('السلة فارغة');
+          return;
+        }
+        
+        // 3. التحقق من المنتجات المطلوبة
+        const requiredValidation = this.validateRequiredProducts();
+        if (!requiredValidation.isValid) {
+          this.showError(requiredValidation.message);
+          return;
+        }
+        
+        // 4. التحقق من صحة جميع المنتجات
+        let allProductsValid = true;
+        let errorMessages = [];
+        
+        this.cart.forEach(item => {
+          const validation = this.validateProduct(item.id, 0, item.quantity);
+          if (!validation.valid) {
+            allProductsValid = false;
+            errorMessages.push(`${item.name}: ${validation.message}`);
+          }
         });
-        return { isValid: false };
+        
+        if (!allProductsValid) {
+          this.showError(`يوجد مشاكل في بعض المنتجات:<br>${errorMessages.join('<br>')}`);
+          return;
+        }
+        
+        // 5. كل شيء جيد، المتابعة للدفع
+        console.log('✅ جميع المنتجات صالحة، المتابعة للدفع');
+        window.location.href = 'checkout.html';
+      }
+      
+      // 🧹 مسح السلة
+      clearCart() {
+        if (this.cart.length === 0) return;
+        
+        if (confirm('هل تريد مسح سلة التسوق بالكامل؟')) {
+          this.cart = [];
+          this.saveCart();
+          this.displayCart();
+          this.showSuccess('🧹 تم مسح سلة التسوق بالكامل');
+        }
+      }
+      
+      // 🔔 نظام الإشعارات
+      showError(message) {
+        const errorEl = document.getElementById('error-message');
+        if (errorEl) {
+          errorEl.innerHTML = message;
+          errorEl.style.display = 'block';
+          setTimeout(() => errorEl.style.display = 'none', 5000);
+        }
+        console.error('❌ ' + message.replace(/<br>/g, ' '));
+      }
+      
+      showSuccess(message) {
+        const successEl = document.getElementById('success-message');
+        if (successEl) {
+          successEl.textContent = message;
+          successEl.style.display = 'block';
+          setTimeout(() => successEl.style.display = 'none', 3000);
+        }
+        console.log('✅ ' + message);
+      }
+      
+      showWarning(message) {
+        this.showError(`⚠️ ${message}`);
+      }
     }
     
-    // التحقق من أن إجمالي كميات المنتجات التكميلية >= كمية الملوخية
-    const totalComplementaryQuantity = complementaryItems.reduce((total, item) => {
-        return total + item.quantity;
-    }, 0);
+    // =============================================
+    // 🎯 تهيئة النظام
+    // =============================================
     
-    if (totalComplementaryQuantity < molokhiaQuantity) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'تنبيه',
-            text: 'إجمالي كمية خضروات بسمة المطلوبة يجب أن يكون مساوي أو أكبر من كمية الملوخية',
-            confirmButtonText: 'حسناً',
-            confirmButtonColor: '#ffc107'
-        });
-        return { isValid: false };
+    let cartManager;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 بدء تحميل صفحة السلة...');
+      
+      // إنشاء مدير السلة
+      cartManager = new CartManager();
+      
+      // إضافة زر مسح السلة
+      addClearCartButton();
+      
+      console.log('✅ صفحة السلة المحلية جاهزة');
+      console.log('📊 عدد المنتجات في السلة:', cartManager.cart.length);
+    });
+    
+    // 🧹 إضافة زر مسح السلة
+    function addClearCartButton() {
+      const clearBtn = document.createElement('button');
+      clearBtn.innerHTML = '🧹 مسح السلة';
+      clearBtn.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(255, 65, 108, 0.3);
+        transition: all 0.3s ease;
+      `;
+      clearBtn.onmouseover = () => clearBtn.style.transform = 'scale(1.05)';
+      clearBtn.onmouseout = () => clearBtn.style.transform = 'scale(1)';
+      clearBtn.onclick = () => cartManager.clearCart();
+      
+      document.body.appendChild(clearBtn);
     }
     
-    return { isValid: true, message: "" };
-}
-
-// وظيفة المتابعة إلى الدفع مع التحقق
-function proceedToCheckout() {
-    // التحقق أولاً من المنتجات المطلوبة والكميات
-    const validation = validateRequiredProducts();
+    // =============================================
+    // 📱 جعل الدوال متاحة عالمياً
+    // =============================================
     
-    if (!validation.isValid) {
-        return; // لا تتابع إذا فشل التحقق
-    }
+    window.cartManager = cartManager;
     
-    // إذا اجتازت المنتجات التحقق، تابع إلى صفحة الدفع
-    window.location.href = 'checkout.html';
-}
-</script>
+  </script>
 </body>
 </html>
