@@ -754,7 +754,15 @@
                   </div>
                 `).join('') : '<p>لا توجد عناصر</p>'}
               </div>
-              <div class="order-total">الإجمالي: ${order.total ? order.total.toFixed(2) : '0.00'} ج</div>
+              <div class="order-total">
+  <div><strong>الإجمالي:</strong> ${order.total ? order.total.toFixed(2) : '0.00'} ج</div>
+
+  ${order.total && order.total < 3000 ? `
+    <div style="color:green;">+ تم إضافة 50 ج توصيل</div>
+    <div><strong>الإجمالي النهائي:</strong> ${(order.total + 50).toFixed(2)} ج</div>
+  ` : ''}
+</div>
+
               
               ${canEdit ? `
               <div class="order-actions">
@@ -1205,3 +1213,4 @@
   </script>
 </body>
 </html>
+
