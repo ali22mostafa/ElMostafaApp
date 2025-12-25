@@ -137,7 +137,7 @@
     <div class="signup-form">
       <form id="signup-form">
         <div class="form-group">
-          <label for="name">الاسم بالكامل*</label>
+          <label for="name">اسم الماركت *</label>
           <input type="text" id="name" required />
         </div>
         <div class="form-group">
@@ -148,10 +148,7 @@
           <label for="address">العنوان*</label>
           <input type="text" id="address" required />
         </div>
-        <div class="form-group">
-          <label for="password">كلمة المرور*</label>
-          <input type="password" id="password" required />
-        </div>
+        
 
         <div class="form-group">
           <label>أيام التوصيل المفضلة*</label>
@@ -275,7 +272,7 @@
       const name = document.getElementById("name").value.trim();
       const phone = document.getElementById("phone").value.trim();
       const address = document.getElementById("address").value.trim();
-      const password = document.getElementById("password").value.trim();
+     ;
       const deliveryDays = document.querySelector('input[name="deliveryDays"]:checked').value;
       const errorDiv = document.getElementById("error-message");
       errorDiv.textContent = "";
@@ -299,7 +296,7 @@
           name,
           phone,
           address,
-          password,
+         
           deliveryDays,
           location: {
             latitude: userLatitude,
