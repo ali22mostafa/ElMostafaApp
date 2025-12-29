@@ -60,6 +60,17 @@
       font-size: 12px;
       font-weight: bold;
     }
+    .deleted-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ff5722;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
     .availability-checkbox {
       display: flex;
       align-items: center;
@@ -82,7 +93,6 @@
       color: #dc3545;
       font-weight: bold;
     }
-    /* زر الشغل علي المكشوف */
     .unlimited-stock-btn {
       background: #9c27b0;
       color: white;
@@ -102,6 +112,12 @@
       font-size: 12px;
       font-weight: bold;
     }
+    .last-updated-info {
+      font-size: 10px;
+      color: #666;
+      margin-top: 5px;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -114,6 +130,7 @@
   <button id="show-offers-btn">عرض العروض فقط</button>
   <button id="show-low-stock-btn">عرض المخزون المنخفض</button>
   <button id="show-unavailable-btn">عرض المنتجات غير المتوفرة</button>
+  <button id="show-deleted-btn">عرض المنتجات المحذوفة</button>
 </div>
 
 <input type="text" id="search" placeholder="🔍 ابحث باسم المنتج..." />
@@ -143,616 +160,879 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script>
   const firebaseConfig = {
-  apiKey: "AIzaSyBKtxMNJ3n_YIsy671sbhlk8Qm1yt5uSB4",
-  authDomain: "mostafa-products.firebaseapp.com",
-  projectId: "mostafa-products",
-  storageBucket: "mostafa-products.firebasestorage.app",
-  messagingSenderId: "841270845665",
-  appId: "1:841270845665:web:f2f857112688b8b8be57a0"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-const productsDiv = document.getElementById("products");
-const alertDiv = document.getElementById("alert");
-const searchInput = document.getElementById("search");
-const showAllBtn = document.getElementById("show-all-btn");
-const showOffersBtn = document.getElementById("show-offers-btn");
-const showLowStockBtn = document.getElementById("show-low-stock-btn");
-const showUnavailableBtn = document.getElementById("show-unavailable-btn");
-
-function showAlert(msg, type = "success") {
-  alertDiv.textContent = msg;
-  alertDiv.className = type === "error" ? "error" : "success";
-  alertDiv.style.display = "block";
-  setTimeout(() => alertDiv.style.display = "none", 3000);
-}
-
-let allProducts = [];
-let allOffers = {};
-let filteredProducts = [];
-let currentFilter = "all";
-
-function createSafeId(id) {
-  return id.replace(/[^a-zA-Z0-9-_]/g, '_');
-}
-
-// ========== نظام الـ Cache مع localStorage ==========
-function updateProductLocally(productId, newData) {
-  const index = allProducts.findIndex(p => p.id === productId);
-  if (index !== -1) {
-    allProducts[index] = { ...allProducts[index], ...newData };
-    saveToLocalStorage();
-    applyFilterAndRender(); // ✅ رجعت
-    return true;
-  }
-  return false;
-}
-
-function deleteProductLocally(productId) {
-  allProducts = allProducts.filter(p => p.id !== productId);
-  delete allOffers[productId];
-  saveToLocalStorage();
-  applyFilterAndRender(); // ✅ رجعت
-}
-
-function addProductLocally(productData) {
-  allProducts.push(productData);
-  saveToLocalStorage();
-  applyFilterAndRender(); // ✅ رجعت
-}
-
-function updateOfferLocally(productId, isOffer) {
-  if (isOffer) {
-    allOffers[productId] = true;
-  } else {
-    delete allOffers[productId];
-  }
-  
-  const index = allProducts.findIndex(p => p.id === productId);
-  if (index !== -1) {
-    allProducts[index].isOffer = isOffer;
-    saveToLocalStorage();
-    applyFilterAndRender(); // ✅ رجعت
-  }
-}
-
-// ⭐ دالة لحفظ البيانات في localStorage
-function saveToLocalStorage() {
-  const cacheData = {
-    products: allProducts,
-    offers: allOffers,
-    timestamp: Date.now()
+    apiKey: "AIzaSyBKtxMNJ3n_YIsy671sbhlk8Qm1yt5uSB4",
+    authDomain: "mostafa-products.firebaseapp.com",
+    projectId: "mostafa-products",
+    storageBucket: "mostafa-products.firebasestorage.app",
+    messagingSenderId: "841270845665",
+    appId: "1:841270845665:web:f2f857112688b8b8be57a0"
   };
-  localStorage.setItem('productsCache', JSON.stringify(cacheData));
-}
 
-// ⭐ دالة لتحميل البيانات من localStorage
-function loadFromLocalStorage() {
-  const cached = localStorage.getItem('productsCache');
-  if (!cached) return false;
-  
-  try {
-    const data = JSON.parse(cached);
-    allProducts = data.products || [];
-    allOffers = data.offers || {};
-    return true;
-  } catch (e) {
-    console.log('❌ مشكلة في تحميل الكاش المحلي');
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  const productsDiv = document.getElementById("products");
+  const alertDiv = document.getElementById("alert");
+  const searchInput = document.getElementById("search");
+  const showAllBtn = document.getElementById("show-all-btn");
+  const showOffersBtn = document.getElementById("show-offers-btn");
+  const showLowStockBtn = document.getElementById("show-low-stock-btn");
+  const showUnavailableBtn = document.getElementById("show-unavailable-btn");
+  const showDeletedBtn = document.getElementById("show-deleted-btn");
+
+  function showAlert(msg, type = "success") {
+    alertDiv.textContent = msg;
+    alertDiv.className = type === "error" ? "error" : "success";
+    alertDiv.style.display = "block";
+    setTimeout(() => alertDiv.style.display = "none", 3000);
+  }
+
+  function formatTimestamp(timestamp) {
+    if (!timestamp) return "غير معروف";
+    try {
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return date.toLocaleString('ar-EG');
+    } catch (e) {
+      return "غير معروف";
+    }
+  }
+
+  let allProducts = [];
+  let allOffers = {};
+  let filteredProducts = [];
+  let currentFilter = "all";
+
+  function createSafeId(id) {
+    return id.replace(/[^a-zA-Z0-9-_]/g, '_');
+  }
+
+  // ========== نظام الـ Cache مع localStorage ==========
+  function updateProductLocally(productId, newData) {
+    const index = allProducts.findIndex(p => p.id === productId);
+    if (index !== -1) {
+      allProducts[index] = { ...allProducts[index], ...newData };
+      saveToLocalStorage();
+      applyFilterAndRender();
+      return true;
+    }
     return false;
   }
-}
 
-// ⭐ دالة لمسح الكاش المحلي
-function clearLocalStorage() {
-  localStorage.removeItem('productsCache');
-}
-// ========== نهاية نظام الـ Cache ==========
-
-async function loadProducts(forceRefresh = false) {
-  productsDiv.innerHTML = "جارٍ التحميل...";
-  
-  // ⭐ إذا كان فيه بيانات في localStorage ومش مفروض نعمل refresh قوي
-  if (!forceRefresh && loadFromLocalStorage()) {
-    applyFilterAndRender();
-    showAlert("✅ تم تحميل البيانات من الكاش المحلي");
-    
-    if (window.updateBulkUnlimitedButton) {
-      window.updateBulkUnlimitedButton();
-    }
-    return; // ⬅️ وقف هنا - مفيش داعي لتحميل من النت
-  }
-  
-  // ⭐ فقط إذا مفيش بيانات في localStorage أو مفروض نعمل refresh قوي
-  try {
-    const [productsSnapshot, offersSnapshot] = await Promise.all([
-      db.collection("products").get(),
-      db.collection("offers").get()
-    ]);
-
-    allOffers = {};
-    offersSnapshot.forEach(doc => {
-      allOffers[doc.id] = true;
-    });
-
-    allProducts = [];
-    productsSnapshot.forEach(doc => {
-      const data = doc.data();
-      allProducts.push({ 
-        id: doc.id, 
-        ...data, 
-        isOffer: !!allOffers[doc.id],
-        available: data.available !== undefined ? data.available : true,
-        stock: data.stock !== undefined ? data.stock : 0,
-        maxOrder: data.maxOrder !== undefined ? data.maxOrder : 0,
-        unlimitedStock: data.unlimitedStock !== undefined ? data.unlimitedStock : false
-      });
-    });
-
-    // ⭐ حفظ في localStorage
+  function deleteProductLocally(productId) {
+    allProducts = allProducts.filter(p => p.id !== productId);
+    delete allOffers[productId];
     saveToLocalStorage();
-    
     applyFilterAndRender();
-    
-    if (window.updateBulkUnlimitedButton) {
-      window.updateBulkUnlimitedButton();
-    }
-    
-  } catch (e) {
-    showAlert("❌ فشل في تحميل المنتجات", "error");
-    console.error(e);
-  }
-}
-
-function applyFilterAndRender() {
-  if (currentFilter === "offers") {
-    filteredProducts = allProducts.filter(p => p.isOffer);
-  } else if (currentFilter === "low-stock") {
-    filteredProducts = allProducts.filter(p => p.stock < 10 && p.stock > 0);
-  } else if (currentFilter === "unavailable") {
-    filteredProducts = allProducts.filter(p => !p.available);
-  } else {
-    filteredProducts = [...allProducts];
   }
 
-  const searchTerm = searchInput.value.trim().toLowerCase();
-  if (searchTerm) {
-    filteredProducts = filteredProducts.filter(p => p.name?.toLowerCase().includes(searchTerm));
+  function addProductLocally(productData) {
+    allProducts.push(productData);
+    saveToLocalStorage();
+    applyFilterAndRender();
   }
 
-  renderProducts(filteredProducts);
-}
-
-function renderProducts(products) {
-  productsDiv.innerHTML = "";
-  if (products.length === 0) {
-    productsDiv.innerHTML = "<p style='text-align:center; color:#666;'>لا توجد منتجات للعرض</p>";
-    return;
-  }
-
-  products.forEach(product => {
-    const profit = product.price && product.cost ? (product.price - product.cost) : 0;
-    const safeId = createSafeId(product.id);
-    
-    const box = document.createElement("div");
-    box.className = "product-box";
-    
-    if (!product.available) {
-      const badge = document.createElement("div");
-      badge.className = "availability-badge";
-      badge.textContent = "غير متوفر";
-      box.appendChild(badge);
-    }
-    
-    if (product.unlimitedStock) {
-      const unlimitedBadge = document.createElement("div");
-      unlimitedBadge.className = "unlimited-badge";
-      unlimitedBadge.textContent = "مخزون غير محدود";
-      box.appendChild(unlimitedBadge);
-    }
-    
-    box.innerHTML = `
-      <div class="product-id">
-        🆔 ${product.id}
-        ${product.isOffer ? '<span style="color: #28a745; font-weight: bold; margin-right: 10px;">📢 على عرض</span>' : ''}
-      </div>
-      <input class="name-input" value="${product.name || ''}" placeholder="اسم المنتج" />
-      <small>سعر الشراء</small>
-      <input style="color: red !important; font-size:25px"  class="cost-input" type="number" value="${product.cost || ''}" placeholder="سعر الشراء" />
-      <small>سعر البيع</small>
-      <input  style="color: green !important; font-size:25px " class="price-input" type="number" value="${product.price || ''}" placeholder="سعر البيع" />
-      ${profit > 0 ? `<div class="profit-info">💰 الربح: ${profit.toFixed(2)} ج (${((profit / product.cost) * 100).toFixed(2)}%)</div>` : ''}
-      
-      <small>الكمية في المخزن</small>
-      <input class="stock-input" type="number" value="${product.stock || 0}" placeholder="الكمية في المخزن" min="0" />
-      
-      <small>الحد الأقصى للطلب (0 = لا حدود)</small>
-      <input class="max-order-input" type="number" value="${product.maxOrder || 0}" placeholder="الحد الأقصى للطلب" min="0" />
-      
-      ${product.stock > 0 && !product.unlimitedStock ? 
-        `<div class="stock-info">📦 المخزون: ${product.stock} وحدة</div>` : 
-        product.unlimitedStock ?
-        `<div class="stock-info" style="color: #9c27b0;">♾️ المخزون: غير محدود</div>` :
-        `<div class="stock-info low-stock">⛔ المخزون: نافذ</div>`}
-      
-      ${product.maxOrder > 0 ? 
-        `<div class="max-order-info">📋 الحد الأقصى للطلب: ${product.maxOrder} وحدة</div>` : 
-        `<div class="max-order-info">📋 لا يوجد حد أقصى للطلب</div>`}
-      
-      <div class="availability-checkbox">
-        <input type="checkbox" id="available-${safeId}" ${product.available ? 'checked' : ''}>
-        <label for="available-${safeId}">المنتج متوفر</label>
-      </div>
-      
-      <div class="availability-checkbox">
-        <input type="checkbox" id="unlimited-stock-${safeId}" ${product.unlimitedStock ? 'checked' : ''}>
-        <label for="unlimited-stock-${safeId}">الشغل علي المكشوف (مخزون غير محدود)</label>
-      </div>
-      
-      <button class="btn update-btn">💾 تحديث</button>
-      <button class="btn delete-btn">🗑️ حذف</button>
-      <button class="btn offer-btn">📢 عرض كعرض</button>
-      <button class="btn remove-offer-btn">❌ حذف العرض</button>
-      ${product.available ? 
-        '<button class="btn availability-btn">❌ وضع كغير متوفر</button>' : 
-        '<button class="btn make-available-btn">✅ وضع كمتوفر</button>'}
-      ${product.unlimitedStock ?
-        '<button class="btn limited-stock-btn">🔒 إيقاف الشغل علي المكشوف</button>' :
-        '<button class="btn unlimited-stock-btn">♾️ تفعيل الشغل علي المكشوف</button>'}
-    `;
-
-    const nameInput = box.querySelector('.name-input');
-    const costInput = box.querySelector('.cost-input');
-    const priceInput = box.querySelector('.price-input');
-    const stockInput = box.querySelector('.stock-input');
-    const maxOrderInput = box.querySelector('.max-order-input');
-    const updateBtn = box.querySelector('.update-btn');
-    const deleteBtn = box.querySelector('.delete-btn');
-    const offerBtn = box.querySelector('.offer-btn');
-    const removeOfferBtn = box.querySelector('.remove-offer-btn');
-    const availabilityBtn = box.querySelector('.availability-btn') || box.querySelector('.make-available-btn');
-    const unlimitedStockBtn = box.querySelector('.unlimited-stock-btn') || box.querySelector('.limited-stock-btn');
-    const availabilityCheckbox = box.querySelector(`#available-${safeId}`);
-    const unlimitedStockCheckbox = box.querySelector(`#unlimited-stock-${safeId}`);
-
-    updateBtn.onclick = async () => {
-      const newName = nameInput.value.trim();
-      const newCost = parseFloat(costInput.value.trim());
-      const newPrice = parseFloat(priceInput.value.trim());
-      const newStock = parseInt(stockInput.value.trim());
-      const newMaxOrder = parseInt(maxOrderInput.value.trim());
-      const newAvailable = availabilityCheckbox.checked;
-      const newUnlimitedStock = unlimitedStockCheckbox.checked;
-      
-      if (!newName || isNaN(newCost) || isNaN(newPrice) || isNaN(newStock) || isNaN(newMaxOrder)) {
-        showAlert("❌ الاسم أو السعر أو الكمية غير صالحة", "error");
-        return;
-      }
-      
-      try {
-        await db.collection("products").doc(product.id).set({ 
-          name: newName, 
-          cost: newCost,
-          price: newPrice,
-          stock: newStock,
-          maxOrder: newMaxOrder,
-          available: newAvailable,
-          unlimitedStock: newUnlimitedStock
-        }, { merge: true });
-        
-        updateProductLocally(product.id, {
-          name: newName,
-          cost: newCost,
-          price: newPrice,
-          stock: newStock,
-          maxOrder: newMaxOrder,
-          available: newAvailable,
-          unlimitedStock: newUnlimitedStock
-        });
-        
-        showAlert(`✅ تم تحديث المنتج (${product.id})`);
-      } catch (e) {
-        showAlert("❌ فشل في التحديث", "error");
-        console.error(e);
-      }
-    };
-
-    deleteBtn.onclick = async () => {
-      if (confirm(`هل تريد حذف المنتج (${product.id})؟`)) {
-        try {
-          await db.collection("products").doc(product.id).delete();
-          await db.collection("offers").doc(product.id).delete().catch(() => {});
-          deleteProductLocally(product.id);
-          showAlert("✅ تم حذف المنتج");
-        } catch (e) {
-          showAlert("❌ فشل في الحذف", "error");
-        }
-      }
-    };
-
-    offerBtn.onclick = async () => {
-      const name = nameInput.value.trim();
-      const price = parseFloat(priceInput.value.trim());
-      if (!name || isNaN(price)) {
-        showAlert("❌ الاسم أو السعر غير صالح", "error");
-        return;
-      }
-      try {
-        await db.collection("offers").doc(product.id).set({ name, price });
-        updateOfferLocally(product.id, true);
-        showAlert("✅ تم إضافة المنتج إلى العروض");
-      } catch (e) {
-        showAlert("❌ فشل في إضافة العرض", "error");
-        console.error(e);
-      }
-    };
-
-    removeOfferBtn.onclick = async () => {
-      try {
-        await db.collection("offers").doc(product.id).delete();
-        updateOfferLocally(product.id, false);
-        showAlert("✅ تم حذف العرض من العروض");
-      } catch (e) {
-        showAlert("❌ فشل في حذف العرض", "error");
-        console.error(e);
-      }
-    };
-
-    availabilityBtn.onclick = async () => {
-      try {
-        const newAvailability = !product.available;
-        await db.collection("products").doc(product.id).set({ 
-          available: newAvailability 
-        }, { merge: true });
-        updateProductLocally(product.id, { available: newAvailability });
-        showAlert(`✅ تم ${newAvailability ? 'تمكين' : 'تعطيل'} المنتج`);
-      } catch (e) {
-        showAlert("❌ فشل في تغيير حالة التوفر", "error");
-        console.error(e);
-      }
-    };
-
-    unlimitedStockBtn.onclick = async () => {
-      try {
-        const newUnlimitedStock = !product.unlimitedStock;
-        await db.collection("products").doc(product.id).set({ 
-          unlimitedStock: newUnlimitedStock 
-        }, { merge: true });
-        updateProductLocally(product.id, { unlimitedStock: newUnlimitedStock });
-        showAlert(`✅ تم ${newUnlimitedStock ? 'تفعيل' : 'إيقاف'} الشغل علي المكشوف`);
-      } catch (e) {
-        showAlert("❌ فشل في تغيير حالة المخزون", "error");
-        console.error(e);
-      }
-    };
-
-    productsDiv.appendChild(box);
-  });
-}
-
-// البحث المباشر بدون Debounce
-searchInput.addEventListener("input", () => {
-  applyFilterAndRender();
-});
-
-showAllBtn.onclick = () => {
-  currentFilter = "all";
-  setActiveFilterButton();
-  applyFilterAndRender();
-};
-
-showOffersBtn.onclick = () => {
-  currentFilter = "offers";
-  setActiveFilterButton();
-  applyFilterAndRender();
-};
-
-showLowStockBtn.onclick = () => {
-  currentFilter = "low-stock";
-  setActiveFilterButton();
-  applyFilterAndRender();
-};
-
-showUnavailableBtn.onclick = () => {
-  currentFilter = "unavailable";
-  setActiveFilterButton();
-  applyFilterAndRender();
-};
-
-function setActiveFilterButton() {
-  showAllBtn.classList.remove("active");
-  showOffersBtn.classList.remove("active");
-  showLowStockBtn.classList.remove("active");
-  showUnavailableBtn.classList.remove("active");
-  
-  if (currentFilter === "all") {
-    showAllBtn.classList.add("active");
-  } else if (currentFilter === "offers") {
-    showOffersBtn.classList.add("active");
-  } else if (currentFilter === "low-stock") {
-    showLowStockBtn.classList.add("active");
-  } else if (currentFilter === "unavailable") {
-    showUnavailableBtn.classList.add("active");
-  }
-}
-
-async function addProduct() {
-  const id = document.getElementById("new-id").value.trim();
-  const name = document.getElementById("new-name").value.trim();
-  const cost = parseFloat(document.getElementById("new-cost").value.trim());
-  const price = parseFloat(document.getElementById("new-price").value.trim());
-  const stock = parseInt(document.getElementById("new-stock").value.trim());
-  const maxOrder = parseInt(document.getElementById("new-max-order").value.trim());
-  const available = document.getElementById("new-available").checked;
-  const unlimitedStock = document.getElementById("new-unlimited-stock").checked;
-
-  if (!id || !name || isNaN(cost) || isNaN(price) || isNaN(stock) || isNaN(maxOrder)) {
-    showAlert("❌ أدخل كل البيانات بشكل صحيح", "error");
-    return;
-  }
-
-  try {
-    await db.collection("products").doc(id).set({ 
-      name, 
-      cost, 
-      price, 
-      stock, 
-      maxOrder, 
-      available,
-      unlimitedStock
-    });
-    
-    addProductLocally({
-      id: id,
-      name: name,
-      cost: cost,
-      price: price,
-      stock: stock,
-      maxOrder: maxOrder,
-      available: available,
-      unlimitedStock: unlimitedStock,
-      isOffer: false
-    });
-    
-    showAlert("✅ تم إضافة المنتج");
-    document.getElementById("new-id").value = '';
-    document.getElementById("new-name").value = '';
-    document.getElementById("new-cost").value = '';
-    document.getElementById("new-price").value = '';
-    document.getElementById("new-stock").value = '0';
-    document.getElementById("new-max-order").value = '0';
-    document.getElementById("new-available").checked = true;
-    document.getElementById("new-unlimited-stock").checked = false;
-  } catch (e) {
-    showAlert("❌ فشل في الإضافة", "error");
-    console.error(e);
-  }
-}
-
-function addRefreshButton() {
-  const filterButtons = document.getElementById("filter-buttons");
-  
-  const refreshBtn = document.createElement("button");
-  refreshBtn.id = "refresh-btn";
-  refreshBtn.innerHTML = "🔄 تحديث البيانات";
-  refreshBtn.style.backgroundColor = "#17a2b8";
-  refreshBtn.style.color = "white";
-  refreshBtn.style.margin = "0 10px";
-  refreshBtn.style.padding = "10px 20px";
-  refreshBtn.style.fontSize = "15px";
-  refreshBtn.style.borderRadius = "8px";
-  refreshBtn.style.border = "none";
-  refreshBtn.style.cursor = "pointer";
-  refreshBtn.style.fontWeight = "bold";
-  
-  refreshBtn.onclick = async () => {
-    refreshBtn.disabled = true;
-    refreshBtn.innerHTML = "⏳ جاري التحديث...";
-    
-    // ⭐ مسح الكاش القديم أولاً
-    clearLocalStorage();
-    
-    // ⭐ تحميل بيانات جديدة من Firestore
-    await loadProducts(true);
-    refreshBtn.disabled = false;
-    refreshBtn.innerHTML = "🔄 تحديث البيانات";
-    showAlert("✅ تم تحديث البيانات من السيرفر");
-  };
-  
-  filterButtons.appendChild(refreshBtn);
-}
-
-function addBulkUnlimitedStockButton() {
-  const filterButtons = document.getElementById("filter-buttons");
-  
-  const bulkUnlimitedBtn = document.createElement("button");
-  bulkUnlimitedBtn.id = "bulk-unlimited-btn";
-  bulkUnlimitedBtn.innerHTML = "♾️ جاري التحميل...";
-  bulkUnlimitedBtn.style.backgroundColor = "#6c757d";
-  bulkUnlimitedBtn.style.color = "white";
-  bulkUnlimitedBtn.style.margin = "0 10px";
-  bulkUnlimitedBtn.style.padding = "10px 20px";
-  bulkUnlimitedBtn.style.fontSize = "15px";
-  bulkUnlimitedBtn.style.borderRadius = "8px";
-  bulkUnlimitedBtn.style.border = "none";
-  bulkUnlimitedBtn.style.cursor = "pointer";
-  bulkUnlimitedBtn.style.fontWeight = "bold";
-  
-  window.updateBulkUnlimitedButton = function() {
-    if (!allProducts || allProducts.length === 0) {
-      bulkUnlimitedBtn.innerHTML = "♾️ جاري التحميل...";
-      bulkUnlimitedBtn.style.backgroundColor = "#6c757d";
-      bulkUnlimitedBtn.disabled = true;
-      return;
-    }
-    
-    const allUnlimited = allProducts.every(product => product.unlimitedStock);
-    
-    if (allUnlimited) {
-      bulkUnlimitedBtn.innerHTML = "🔒 إلغاء الشغل علي المكشوف للجميع";
-      bulkUnlimitedBtn.style.backgroundColor = "#795548";
+  function updateOfferLocally(productId, isOffer) {
+    if (isOffer) {
+      allOffers[productId] = true;
     } else {
-      bulkUnlimitedBtn.innerHTML = "♾️ تفعيل الشغل علي المكشوف للجميع";
-      bulkUnlimitedBtn.style.backgroundColor = "#9c27b0";
+      delete allOffers[productId];
     }
     
-    bulkUnlimitedBtn.disabled = false;
-  };
-  
-  bulkUnlimitedBtn.onclick = async function() {
-    if (!allProducts || allProducts.length === 0) return;
+    const index = allProducts.findIndex(p => p.id === productId);
+    if (index !== -1) {
+      allProducts[index].isOffer = isOffer;
+      saveToLocalStorage();
+      applyFilterAndRender();
+    }
+  }
+
+  function saveToLocalStorage() {
+    const cacheData = {
+      products: allProducts,
+      offers: allOffers,
+      timestamp: Date.now()
+    };
+    localStorage.setItem('productsCache', JSON.stringify(cacheData));
+  }
+
+  function loadFromLocalStorage() {
+    const cached = localStorage.getItem('productsCache');
+    if (!cached) return false;
     
-    const allUnlimited = allProducts.every(product => product.unlimitedStock);
-    const action = !allUnlimited;
-    const actionText = action ? "تفعيل" : "إلغاء";
+    try {
+      const data = JSON.parse(cached);
+      allProducts = data.products || [];
+      allOffers = data.offers || {};
+      return true;
+    } catch (e) {
+      console.log('❌ مشكلة في تحميل الكاش المحلي');
+      return false;
+    }
+  }
+
+  function clearLocalStorage() {
+    localStorage.removeItem('productsCache');
+  }
+
+  async function loadProducts(forceRefresh = false) {
+    productsDiv.innerHTML = "جارٍ التحميل...";
     
-    if (!confirm(`هل تريد ${actionText} 'الشغل علي المكشوف' لجميع المنتجات؟`)) {
+    if (!forceRefresh && loadFromLocalStorage()) {
+      applyFilterAndRender();
+      showAlert("✅ تم تحميل البيانات من الكاش المحلي");
+      updateBulkUnlimitedButton();
       return;
     }
     
     try {
-      bulkUnlimitedBtn.disabled = true;
-      bulkUnlimitedBtn.innerHTML = "⏳ جاري التحديث...";
+      const [productsSnapshot, offersSnapshot] = await Promise.all([
+        db.collection("products").get(),
+        db.collection("offers").get()
+      ]);
+
+      allOffers = {};
+      offersSnapshot.forEach(doc => {
+        allOffers[doc.id] = true;
+      });
+
+      allProducts = [];
+      productsSnapshot.forEach(doc => {
+        const data = doc.data();
+        allProducts.push({ 
+          id: doc.id, 
+          ...data, 
+          isOffer: !!allOffers[doc.id],
+          available: data.available !== undefined ? data.available : true,
+          stock: data.stock !== undefined ? data.stock : 0,
+          maxOrder: data.maxOrder !== undefined ? data.maxOrder : 0,
+          unlimitedStock: data.unlimitedStock !== undefined ? data.unlimitedStock : false,
+          lastUpdated: data.lastUpdated || null,
+          deleted: data.deleted || false
+        });
+      });
+
+      saveToLocalStorage();
+      applyFilterAndRender();
+      updateBulkUnlimitedButton();
       
+    } catch (e) {
+      showAlert("❌ فشل في تحميل المنتجات", "error");
+      console.error(e);
+    }
+  }
+
+  function applyFilterAndRender() {
+    if (currentFilter === "offers") {
+      filteredProducts = allProducts.filter(p => p.isOffer);
+    } else if (currentFilter === "low-stock") {
+      filteredProducts = allProducts.filter(p => p.stock < 10 && p.stock > 0 && !p.deleted);
+    } else if (currentFilter === "unavailable") {
+      filteredProducts = allProducts.filter(p => !p.available && !p.deleted);
+    } else if (currentFilter === "deleted") {
+      filteredProducts = allProducts.filter(p => p.deleted);
+    } else {
+      filteredProducts = allProducts.filter(p => !p.deleted); // عرض غير المحذوفين افتراضياً
+    }
+
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    if (searchTerm) {
+      filteredProducts = filteredProducts.filter(p => p.name?.toLowerCase().includes(searchTerm));
+    }
+
+    renderProducts(filteredProducts);
+  }
+
+  function renderProducts(products) {
+    productsDiv.innerHTML = "";
+    if (products.length === 0) {
+      productsDiv.innerHTML = "<p style='text-align:center; color:#666;'>لا توجد منتجات للعرض</p>";
+      return;
+    }
+
+    products.forEach(product => {
+      const profit = product.price && product.cost ? (product.price - product.cost) : 0;
+      const safeId = createSafeId(product.id);
+      
+      const box = document.createElement("div");
+      box.className = "product-box";
+      
+      if (!product.available && !product.deleted) {
+        const badge = document.createElement("div");
+        badge.className = "availability-badge";
+        badge.textContent = "غير متوفر";
+        box.appendChild(badge);
+      }
+      
+      if (product.deleted) {
+        const deletedBadge = document.createElement("div");
+        deletedBadge.className = "deleted-badge";
+        deletedBadge.textContent = "محذوف";
+        box.appendChild(deletedBadge);
+      }
+      
+      if (product.unlimitedStock && !product.deleted) {
+        const unlimitedBadge = document.createElement("div");
+        unlimitedBadge.className = "unlimited-badge";
+        unlimitedBadge.textContent = "مخزون غير محدود";
+        box.appendChild(unlimitedBadge);
+      }
+      
+      box.innerHTML = `
+        <div class="product-id">
+          🆔 ${product.id}
+          ${product.isOffer ? '<span style="color: #28a745; font-weight: bold; margin-right: 10px;">📢 على عرض</span>' : ''}
+        </div>
+        <input class="name-input" value="${product.name || ''}" placeholder="اسم المنتج" />
+        <small>سعر الشراء</small>
+        <input style="color: red !important; font-size:25px"  class="cost-input" type="number" value="${product.cost || ''}" placeholder="سعر الشراء" />
+        <small>سعر البيع</small>
+        <input  style="color: green !important; font-size:25px " class="price-input" type="number" value="${product.price || ''}" placeholder="سعر البيع" />
+        ${profit > 0 ? `<div class="profit-info">💰 الربح: ${profit.toFixed(2)} ج (${((profit / product.cost) * 100).toFixed(2)}%)</div>` : ''}
+        
+        <small>الكمية في المخزن</small>
+        <input class="stock-input" type="number" value="${product.stock || 0}" placeholder="الكمية في المخزن" min="0" />
+        
+        <small>الحد الأقصى للطلب (0 = لا حدود)</small>
+        <input class="max-order-input" type="number" value="${product.maxOrder || 0}" placeholder="الحد الأقصى للطلب" min="0" />
+        
+        ${product.lastUpdated ? `<div class="last-updated-info">🕒 آخر تحديث: ${formatTimestamp(product.lastUpdated)}</div>` : ''}
+        
+        ${product.stock > 0 && !product.unlimitedStock ? 
+          `<div class="stock-info">📦 المخزون: ${product.stock} وحدة</div>` : 
+          product.unlimitedStock ?
+          `<div class="stock-info" style="color: #9c27b0;">♾️ المخزون: غير محدود</div>` :
+          `<div class="stock-info low-stock">⛔ المخزون: نافذ</div>`}
+        
+        ${product.maxOrder > 0 ? 
+          `<div class="max-order-info">📋 الحد الأقصى للطلب: ${product.maxOrder} وحدة</div>` : 
+          `<div class="max-order-info">📋 لا يوجد حد أقصى للطلب</div>`}
+        
+        ${!product.deleted ? `
+          <div class="availability-checkbox">
+            <input type="checkbox" id="available-${safeId}" ${product.available ? 'checked' : ''}>
+            <label for="available-${safeId}">المنتج متوفر</label>
+          </div>
+          
+          <div class="availability-checkbox">
+            <input type="checkbox" id="unlimited-stock-${safeId}" ${product.unlimitedStock ? 'checked' : ''}>
+            <label for="unlimited-stock-${safeId}">الشغل علي المكشوف (مخزون غير محدود)</label>
+          </div>
+          
+          <button class="btn update-btn">💾 تحديث</button>
+          <button class="btn delete-btn">${product.deleted ? '♻️ إستعادة' : '🗑️ حذف'}</button>
+          <button class="btn offer-btn">📢 عرض كعرض</button>
+          <button class="btn remove-offer-btn">❌ حذف العرض</button>
+          ${product.available ? 
+            '<button class="btn availability-btn">❌ وضع كغير متوفر</button>' : 
+            '<button class="btn make-available-btn">✅ وضع كمتوفر</button>'}
+          ${product.unlimitedStock ?
+            '<button class="btn limited-stock-btn">🔒 إيقاف الشغل علي المكشوف</button>' :
+            '<button class="btn unlimited-stock-btn">♾️ تفعيل الشغل علي المكشوف</button>'}
+        ` : `
+          <div style="color: #ff5722; font-weight: bold; padding: 10px; background: #fff3e0; border-radius: 5px;">
+            ⚠️ هذا المنتج محذوف (Soft Delete)
+          </div>
+          <button class="btn update-btn" style="background: #4CAF50;">♻️ إستعادة المنتج</button>
+          <button class="btn delete-btn" style="background: #f44336;">🗑️ حذف نهائي</button>
+        `}
+      `;
+
+      if (!product.deleted) {
+        const nameInput = box.querySelector('.name-input');
+        const costInput = box.querySelector('.cost-input');
+        const priceInput = box.querySelector('.price-input');
+        const stockInput = box.querySelector('.stock-input');
+        const maxOrderInput = box.querySelector('.max-order-input');
+        const updateBtn = box.querySelector('.update-btn');
+        const deleteBtn = box.querySelector('.delete-btn');
+        const offerBtn = box.querySelector('.offer-btn');
+        const removeOfferBtn = box.querySelector('.remove-offer-btn');
+        const availabilityBtn = box.querySelector('.availability-btn') || box.querySelector('.make-available-btn');
+        const unlimitedStockBtn = box.querySelector('.unlimited-stock-btn') || box.querySelector('.limited-stock-btn');
+        const availabilityCheckbox = box.querySelector(`#available-${safeId}`);
+        const unlimitedStockCheckbox = box.querySelector(`#unlimited-stock-${safeId}`);
+
+        updateBtn.onclick = async () => {
+          const newName = nameInput.value.trim();
+          const newCost = parseFloat(costInput.value.trim());
+          const newPrice = parseFloat(priceInput.value.trim());
+          const newStock = parseInt(stockInput.value.trim());
+          const newMaxOrder = parseInt(maxOrderInput.value.trim());
+          const newAvailable = availabilityCheckbox.checked;
+          const newUnlimitedStock = unlimitedStockCheckbox.checked;
+          
+          if (!newName || isNaN(newCost) || isNaN(newPrice) || isNaN(newStock) || isNaN(newMaxOrder)) {
+            showAlert("❌ الاسم أو السعر أو الكمية غير صالحة", "error");
+            return;
+          }
+          
+          try {
+            const now = firebase.firestore.FieldValue.serverTimestamp();
+            
+            await db.collection("products").doc(product.id).set({ 
+              name: newName, 
+              cost: newCost,
+              price: newPrice,
+              stock: newStock,
+              maxOrder: newMaxOrder,
+              available: newAvailable,
+              unlimitedStock: newUnlimitedStock,
+              lastUpdated: now  // ⬅️ تحديث الـ timestamp
+            }, { merge: true });
+            
+            // تحديث النظام العام
+            await db.collection('system').doc('update').update({
+              lastProductsUpdate: now,
+              globalLastUpdate: now
+            });
+            
+            updateProductLocally(product.id, {
+              name: newName,
+              cost: newCost,
+              price: newPrice,
+              stock: newStock,
+              maxOrder: newMaxOrder,
+              available: newAvailable,
+              unlimitedStock: newUnlimitedStock,
+              lastUpdated: now
+            });
+            
+            showAlert(`✅ تم تحديث المنتج (${product.id})`);
+          } catch (e) {
+            showAlert("❌ فشل في التحديث", "error");
+            console.error(e);
+          }
+        };
+
+        deleteBtn.onclick = async () => {
+          if (confirm(`هل تريد حذف المنتج (${product.id})؟\n\nسيتم حفظ المنتج كمحذوف (Soft Delete) ويمكن استعادته لاحقاً.`)) {
+            try {
+              const now = firebase.firestore.FieldValue.serverTimestamp();
+              
+              // Soft Delete
+              await db.collection("products").doc(product.id).set({ 
+                deleted: true,
+                lastUpdated: now
+              }, { merge: true });
+              
+              // تحديث النظام العام
+              await db.collection('system').doc('update').update({
+                lastProductsUpdate: now,
+                globalLastUpdate: now
+              });
+              
+              updateProductLocally(product.id, { 
+                deleted: true,
+                lastUpdated: now
+              });
+              
+              showAlert("✅ تم حذف المنتج (يمكن استعادته)");
+            } catch (e) {
+              showAlert("❌ فشل في الحذف", "error");
+              console.error(e);
+            }
+          }
+        };
+
+        offerBtn.onclick = async () => {
+          const name = nameInput.value.trim();
+          const price = parseFloat(priceInput.value.trim());
+          if (!name || isNaN(price)) {
+            showAlert("❌ الاسم أو السعر غير صالح", "error");
+            return;
+          }
+          try {
+            await db.collection("offers").doc(product.id).set({ name, price });
+            updateOfferLocally(product.id, true);
+            showAlert("✅ تم إضافة المنتج إلى العروض");
+          } catch (e) {
+            showAlert("❌ فشل في إضافة العرض", "error");
+            console.error(e);
+          }
+        };
+
+        removeOfferBtn.onclick = async () => {
+          try {
+            await db.collection("offers").doc(product.id).delete();
+            updateOfferLocally(product.id, false);
+            showAlert("✅ تم حذف العرض من العروض");
+          } catch (e) {
+            showAlert("❌ فشل في حذف العرض", "error");
+            console.error(e);
+          }
+        };
+
+        availabilityBtn.onclick = async () => {
+          try {
+            const now = firebase.firestore.FieldValue.serverTimestamp();
+            const newAvailability = !product.available;
+            await db.collection("products").doc(product.id).set({ 
+              available: newAvailability,
+              lastUpdated: now
+            }, { merge: true });
+            
+            // تحديث النظام العام
+            await db.collection('system').doc('update').update({
+              lastProductsUpdate: now
+            });
+            
+            updateProductLocally(product.id, { 
+              available: newAvailability,
+              lastUpdated: now
+            });
+            showAlert(`✅ تم ${newAvailability ? 'تمكين' : 'تعطيل'} المنتج`);
+          } catch (e) {
+            showAlert("❌ فشل في تغيير حالة التوفر", "error");
+            console.error(e);
+          }
+        };
+
+        unlimitedStockBtn.onclick = async () => {
+          try {
+            const now = firebase.firestore.FieldValue.serverTimestamp();
+            const newUnlimitedStock = !product.unlimitedStock;
+            await db.collection("products").doc(product.id).set({ 
+              unlimitedStock: newUnlimitedStock,
+              lastUpdated: now
+            }, { merge: true });
+            
+            // تحديث النظام العام
+            await db.collection('system').doc('update').update({
+              lastProductsUpdate: now
+            });
+            
+            updateProductLocally(product.id, { 
+              unlimitedStock: newUnlimitedStock,
+              lastUpdated: now
+            });
+            showAlert(`✅ تم ${newUnlimitedStock ? 'تفعيل' : 'إيقاف'} الشغل علي المكشوف`);
+          } catch (e) {
+            showAlert("❌ فشل في تغيير حالة المخزون", "error");
+            console.error(e);
+          }
+        };
+      } else {
+        // للمنتجات المحذوفة
+        const restoreBtn = box.querySelector('.update-btn');
+        const permanentDeleteBtn = box.querySelector('.delete-btn');
+
+        restoreBtn.onclick = async () => {
+          if (confirm(`هل تريد استعادة المنتج (${product.id})؟`)) {
+            try {
+              const now = firebase.firestore.FieldValue.serverTimestamp();
+              
+              await db.collection("products").doc(product.id).set({ 
+                deleted: false,
+                lastUpdated: now
+              }, { merge: true });
+              
+              // تحديث النظام العام
+              await db.collection('system').doc('update').update({
+                lastProductsUpdate: now,
+                globalLastUpdate: now
+              });
+              
+              updateProductLocally(product.id, { 
+                deleted: false,
+                lastUpdated: now
+              });
+              
+              showAlert("✅ تم استعادة المنتج");
+            } catch (e) {
+              showAlert("❌ فشل في الاستعادة", "error");
+              console.error(e);
+            }
+          }
+        };
+
+        permanentDeleteBtn.onclick = async () => {
+          if (confirm(`⚠️ تحذير: هذا الحذف نهائي!\nهل تريد حذف المنتج (${product.id}) نهائياً من قاعدة البيانات؟`)) {
+            try {
+              await db.collection("products").doc(product.id).delete();
+              await db.collection("offers").doc(product.id).delete().catch(() => {});
+              deleteProductLocally(product.id);
+              showAlert("✅ تم حذف المنتج نهائياً");
+            } catch (e) {
+              showAlert("❌ فشل في الحذف النهائي", "error");
+              console.error(e);
+            }
+          }
+        };
+      }
+
+      productsDiv.appendChild(box);
+    });
+  }
+
+  searchInput.addEventListener("input", () => {
+    applyFilterAndRender();
+  });
+
+  showAllBtn.onclick = () => {
+    currentFilter = "all";
+    setActiveFilterButton();
+    applyFilterAndRender();
+  };
+
+  showOffersBtn.onclick = () => {
+    currentFilter = "offers";
+    setActiveFilterButton();
+    applyFilterAndRender();
+  };
+
+  showLowStockBtn.onclick = () => {
+    currentFilter = "low-stock";
+    setActiveFilterButton();
+    applyFilterAndRender();
+  };
+
+  showUnavailableBtn.onclick = () => {
+    currentFilter = "unavailable";
+    setActiveFilterButton();
+    applyFilterAndRender();
+  };
+
+  showDeletedBtn.onclick = () => {
+    currentFilter = "deleted";
+    setActiveFilterButton();
+    applyFilterAndRender();
+  };
+
+  function setActiveFilterButton() {
+    showAllBtn.classList.remove("active");
+    showOffersBtn.classList.remove("active");
+    showLowStockBtn.classList.remove("active");
+    showUnavailableBtn.classList.remove("active");
+    showDeletedBtn.classList.remove("active");
+    
+    if (currentFilter === "all") {
+      showAllBtn.classList.add("active");
+    } else if (currentFilter === "offers") {
+      showOffersBtn.classList.add("active");
+    } else if (currentFilter === "low-stock") {
+      showLowStockBtn.classList.add("active");
+    } else if (currentFilter === "unavailable") {
+      showUnavailableBtn.classList.add("active");
+    } else if (currentFilter === "deleted") {
+      showDeletedBtn.classList.add("active");
+    }
+  }
+
+  async function addProduct() {
+    const id = document.getElementById("new-id").value.trim();
+    const name = document.getElementById("new-name").value.trim();
+    const cost = parseFloat(document.getElementById("new-cost").value.trim());
+    const price = parseFloat(document.getElementById("new-price").value.trim());
+    const stock = parseInt(document.getElementById("new-stock").value.trim());
+    const maxOrder = parseInt(document.getElementById("new-max-order").value.trim());
+    const available = document.getElementById("new-available").checked;
+    const unlimitedStock = document.getElementById("new-unlimited-stock").checked;
+
+    if (!id || !name || isNaN(cost) || isNaN(price) || isNaN(stock) || isNaN(maxOrder)) {
+      showAlert("❌ أدخل كل البيانات بشكل صحيح", "error");
+      return;
+    }
+
+    try {
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      
+      await db.collection("products").doc(id).set({ 
+        name, 
+        cost, 
+        price, 
+        stock, 
+        maxOrder, 
+        available,
+        unlimitedStock,
+        lastUpdated: now,    // ⬅️ تسجيل وقت الإضافة
+        deleted: false       // ⬅️ المنتج جديد وغير محذوف
+      });
+      
+      // تحديث النظام العام
+      await db.collection('system').doc('update').update({
+        lastProductsUpdate: now,
+        globalLastUpdate: now
+      });
+      
+      addProductLocally({
+        id: id,
+        name: name,
+        cost: cost,
+        price: price,
+        stock: stock,
+        maxOrder: maxOrder,
+        available: available,
+        unlimitedStock: unlimitedStock,
+        lastUpdated: now,
+        deleted: false,
+        isOffer: false
+      });
+      
+      showAlert("✅ تم إضافة المنتج");
+      document.getElementById("new-id").value = '';
+      document.getElementById("new-name").value = '';
+      document.getElementById("new-cost").value = '';
+      document.getElementById("new-price").value = '';
+      document.getElementById("new-stock").value = '0';
+      document.getElementById("new-max-order").value = '0';
+      document.getElementById("new-available").checked = true;
+      document.getElementById("new-unlimited-stock").checked = false;
+    } catch (e) {
+      showAlert("❌ فشل في الإضافة", "error");
+      console.error(e);
+    }
+  }
+
+  function addRefreshButton() {
+    const filterButtons = document.getElementById("filter-buttons");
+    
+    const refreshBtn = document.createElement("button");
+    refreshBtn.id = "refresh-btn";
+    refreshBtn.innerHTML = "🔄 تحديث البيانات";
+    refreshBtn.style.backgroundColor = "#17a2b8";
+    refreshBtn.style.color = "white";
+    refreshBtn.style.margin = "0 10px";
+    refreshBtn.style.padding = "10px 20px";
+    refreshBtn.style.fontSize = "15px";
+    refreshBtn.style.borderRadius = "8px";
+    refreshBtn.style.border = "none";
+    refreshBtn.style.cursor = "pointer";
+    refreshBtn.style.fontWeight = "bold";
+    
+    refreshBtn.onclick = async () => {
+      refreshBtn.disabled = true;
+      refreshBtn.innerHTML = "⏳ جاري التحديث...";
+      
+      clearLocalStorage();
+      await loadProducts(true);
+      refreshBtn.disabled = false;
+      refreshBtn.innerHTML = "🔄 تحديث البيانات";
+      showAlert("✅ تم تحديث البيانات من السيرفر");
+    };
+    
+    filterButtons.appendChild(refreshBtn);
+  }
+
+  function addGlobalUpdateButton() {
+    const filterButtons = document.getElementById("filter-buttons");
+    
+    const globalUpdateBtn = document.createElement("button");
+    globalUpdateBtn.id = "global-update-btn";
+    globalUpdateBtn.innerHTML = "🌍 إشعار جميع المستخدمين";
+    globalUpdateBtn.style.backgroundColor = "#2196F3";
+    globalUpdateBtn.style.color = "white";
+    globalUpdateBtn.style.margin = "0 10px";
+    globalUpdateBtn.style.padding = "10px 20px";
+    globalUpdateBtn.style.fontSize = "15px";
+    globalUpdateBtn.style.borderRadius = "8px";
+    globalUpdateBtn.style.border = "none";
+    globalUpdateBtn.style.cursor = "pointer";
+    globalUpdateBtn.style.fontWeight = "bold";
+    
+    globalUpdateBtn.onclick = async () => {
+      if (!confirm("هل تريد إشعار جميع المستخدمين بوجود تحديثات جديدة؟\n\nسيضطر المستخدمون لجلب المنتجات المحدثة فقط في المرة القادمة.")) {
+        return;
+      }
+      
+      try {
+        globalUpdateBtn.disabled = true;
+        globalUpdateBtn.innerHTML = "⏳ جاري الإشعار...";
+        
+        const now = firebase.firestore.FieldValue.serverTimestamp();
+        
+        // تحديث النظام العام فقط
+        await db.collection('system').doc('update').update({
+          lastProductsUpdate: now,
+          globalLastUpdate: now,
+          updateVersion: firebase.firestore.FieldValue.increment(1)
+        });
+        
+        showAlert("✅ تم إشعار جميع المستخدمين بالتحديثات الجديدة");
+        
+      } catch (e) {
+        showAlert("❌ فشل في الإشعار", "error");
+        console.error(e);
+      } finally {
+        globalUpdateBtn.disabled = false;
+        globalUpdateBtn.innerHTML = "🌍 إشعار جميع المستخدمين";
+      }
+    };
+    
+    filterButtons.appendChild(globalUpdateBtn);
+  }
+
+  function addBulkUnlimitedStockButton() {
+    const filterButtons = document.getElementById("filter-buttons");
+    
+    const bulkUnlimitedBtn = document.createElement("button");
+    bulkUnlimitedBtn.id = "bulk-unlimited-btn";
+    bulkUnlimitedBtn.innerHTML = "♾️ جاري التحميل...";
+    bulkUnlimitedBtn.style.backgroundColor = "#6c757d";
+    bulkUnlimitedBtn.style.color = "white";
+    bulkUnlimitedBtn.style.margin = "0 10px";
+    bulkUnlimitedBtn.style.padding = "10px 20px";
+    bulkUnlimitedBtn.style.fontSize = "15px";
+    bulkUnlimitedBtn.style.borderRadius = "8px";
+    bulkUnlimitedBtn.style.border = "none";
+    bulkUnlimitedBtn.style.cursor = "pointer";
+    bulkUnlimitedBtn.style.fontWeight = "bold";
+    
+    window.updateBulkUnlimitedButton = function() {
+      if (!allProducts || allProducts.length === 0) {
+        bulkUnlimitedBtn.innerHTML = "♾️ جاري التحميل...";
+        bulkUnlimitedBtn.style.backgroundColor = "#6c757d";
+        bulkUnlimitedBtn.disabled = true;
+        return;
+      }
+      
+      const allUnlimited = allProducts.filter(p => !p.deleted).every(product => product.unlimitedStock);
+      
+      if (allUnlimited) {
+        bulkUnlimitedBtn.innerHTML = "🔒 إلغاء الشغل علي المكشوف للجميع";
+        bulkUnlimitedBtn.style.backgroundColor = "#795548";
+      } else {
+        bulkUnlimitedBtn.innerHTML = "♾️ تفعيل الشغل علي المكشوف للجميع";
+        bulkUnlimitedBtn.style.backgroundColor = "#9c27b0";
+      }
+      
+      bulkUnlimitedBtn.disabled = false;
+    };
+    
+    bulkUnlimitedBtn.onclick = async function() {
+      if (!allProducts || allProducts.length === 0) return;
+      
+      const activeProducts = allProducts.filter(p => !p.deleted);
+      const allUnlimited = activeProducts.every(product => product.unlimitedStock);
+      const action = !allUnlimited;
+      const actionText = action ? "تفعيل" : "إلغاء";
+      
+      if (!confirm(`هل تريد ${actionText} 'الشغل علي المكشوف' لجميع المنتجات النشطة (${activeProducts.length} منتج)؟`)) {
+        return;
+      }
+      
+      try {
+        bulkUnlimitedBtn.disabled = true;
+        bulkUnlimitedBtn.innerHTML = "⏳ جاري التحديث...";
+        
+        const batch = db.batch();
+        const now = firebase.firestore.FieldValue.serverTimestamp();
+        
+        activeProducts.forEach(product => {
+          const productRef = db.collection("products").doc(product.id);
+          batch.update(productRef, { 
+            unlimitedStock: action,
+            lastUpdated: now
+          });
+        });
+        
+        await batch.commit();
+        
+        // تحديث النظام العام
+        await db.collection('system').doc('update').update({
+          lastProductsUpdate: now,
+          globalLastUpdate: now
+        });
+        
+        showAlert(`✅ تم ${actionText} الشغل علي المكشوف لجميع المنتجات النشطة`);
+        
+        activeProducts.forEach(product => {
+          updateProductLocally(product.id, { 
+            unlimitedStock: action,
+            lastUpdated: now
+          });
+        });
+        
+        updateBulkUnlimitedButton();
+        
+      } catch (e) {
+        showAlert("❌ فشل في التحديث", "error");
+        console.error(e);
+        bulkUnlimitedBtn.disabled = false;
+        updateBulkUnlimitedButton();
+      }
+    };
+    
+    filterButtons.appendChild(bulkUnlimitedBtn);
+  }
+
+  async function addTimestampsToAllProducts() {
+    if (!confirm("⚠️ تحذير: هذه العملية مرة واحدة فقط!\n\nهل تريد إضافة timestamps لجميع المنتجات الموجودة؟")) {
+      return;
+    }
+    
+    try {
+      showAlert("⏳ جاري تحديث جميع المنتجات بـ timestamps...", "success");
+      
+      const snapshot = await db.collection("products").get();
       const batch = db.batch();
-      allProducts.forEach(product => {
-        const productRef = db.collection("products").doc(product.id);
-        batch.update(productRef, { unlimitedStock: action });
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      
+      snapshot.forEach(doc => {
+        const productRef = db.collection("products").doc(doc.id);
+        batch.update(productRef, { 
+          lastUpdated: now,
+          deleted: false 
+        });
       });
       
       await batch.commit();
-      showAlert(`✅ تم ${actionText} الشغل علي المكشوف لجميع المنتجات`);
       
-      allProducts.forEach(product => {
-        updateProductLocally(product.id, { unlimitedStock: action });
-      });
+      // تحديث النظام العام
+      await db.collection('system').doc('update').set({
+        updateVersion: 1,
+        lastProductsUpdate: now,
+        globalLastUpdate: now,
+        updateRequired: true
+      }, { merge: true });
       
-      window.updateBulkUnlimitedButton();
+      showAlert("✅ تم تحديث جميع المنتجات بـ timestamps وإعداد النظام الجديد");
+      
+      // إعادة تحميل البيانات
+      await loadProducts(true);
       
     } catch (e) {
-      showAlert("❌ فشل في التحديث", "error");
+      showAlert("❌ فشل في تحديث المنتجات", "error");
       console.error(e);
-      bulkUnlimitedBtn.disabled = false;
-      window.updateBulkUnlimitedButton();
     }
-  };
-  
-  filterButtons.appendChild(bulkUnlimitedBtn);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-  if (!user || user.phone !== "01021502941") {
-    alert("🔒 يجب تسجيل الدخول كمشرف لعرض هذه الصفحة");
-    window.location.href = "login.html";
-    return;
   }
-  
-  addBulkUnlimitedStockButton();
-  addRefreshButton();
-  loadProducts(); // ⬅️ أول تحميل للصفحة
-});
+
+  function addInitSystemButton() {
+    const filterButtons = document.getElementById("filter-buttons");
+    
+    const initBtn = document.createElement("button");
+    initBtn.id = "init-system-btn";
+    initBtn.innerHTML = "⚙️ تهيئة النظام الجديد";
+    initBtn.style.backgroundColor = "#FF9800";
+    initBtn.style.color = "white";
+    initBtn.style.margin = "0 10px";
+    initBtn.style.padding = "10px 20px";
+    initBtn.style.fontSize = "15px";
+    initBtn.style.borderRadius = "8px";
+    initBtn.style.border = "none";
+    initBtn.style.cursor = "pointer";
+    initBtn.style.fontWeight = "bold";
+    
+    initBtn.onclick = () => {
+      addTimestampsToAllProducts();
+    };
+    
+    filterButtons.appendChild(initBtn);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.phone !== "01021502941") {
+      alert("🔒 يجب تسجيل الدخول كمشرف لعرض هذه الصفحة");
+      window.location.href = "login.html";
+      return;
+    }
+    
+    addBulkUnlimitedStockButton();
+    addRefreshButton();
+    addGlobalUpdateButton();
+    addInitSystemButton();
+    loadProducts();
+  });
 </script>
 </body>
 </html>
