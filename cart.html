@@ -874,51 +874,66 @@
       
       // 📊 التحقق من المنتجات المطلوبة (ملوخية بسمة)
       validateRequiredProducts() {
-        const requiredProduct = 'basma-molokhia';
-        const complementaryProducts = [
-          'basma-taro', 'basma-beans', 'basma-mixed-veg', 
-          'basma-peas-carrots', 'basma-peas-plain', 'basma-veg-soup',
-          'basma-okra-premium', 'basma-okra-zero', 'basma-okra-extra', 
-          'basma-okra-grapes', 'basma-okra-strewBerry', 'basma-spinach'
-        ];
-        
-        // البحث عن منتج الملوخية في السلة
-        const molokhiaItem = this.cart.find(item => item.id === requiredProduct);
-        
-        // إذا لم تكن هناك ملوخية، يمكن المتابعة مباشرة
-        if (!molokhiaItem) {
-          return { isValid: true, message: "" };
-        }
-        
-        const molokhiaQuantity = molokhiaItem.quantity;
-        
-        // البحث عن المنتجات التكميلية في السلة
-        const complementaryItems = this.cart.filter(item => 
-          complementaryProducts.includes(item.id) && item.id !== requiredProduct
-        );
-        
-        // التحقق من وجود منتج واحد على الأقل من المنتجات التكميلية
-        if (complementaryItems.length === 0) {
-          return { 
-            isValid: false, 
-            message: '⚠️ لقد طلبت ملوخية بسمة فقط. يجب طلب أي منتج آخر من خضروات بسمة بنفس كمية الملوخية أو زيادة'
-          };
-        }
-        
-        // التحقق من أن إجمالي كميات المنتجات التكميلية >= كمية الملوخية
-        const totalComplementaryQuantity = complementaryItems.reduce((total, item) => {
-          return total + item.quantity;
-        }, 0);
-        
-        if (totalComplementaryQuantity < molokhiaQuantity) {
-          return { 
-            isValid: false, 
-            message: '⚠️ إجمالي كمية خضروات بسمة المطلوبة يجب أن يكون مساوي أو أكبر من كمية الملوخية'
-          };
-        }
-        
-        return { isValid: true, message: "" };
-      }
+  // المنتجات اللي محتاجة خضار
+  const requiredProducts = [
+    'basma-molokhia',
+    'basma-okra-premium',
+    'basma-okra-zero',
+    'basma-okra-extra'
+  ];
+
+  // الخضار المسموح بيها
+  const complementaryProducts = [
+    'basma-taro', 'basma-beans', 'basma-mixed-veg', 
+    'basma-peas-carrots', 'basma-peas-plain', 'basma-veg-soup',
+    'basma-okra-grapes', 'basma-okra-strewBerry', 'basma-spinach'
+  ];
+
+  // المنتجات اللي محتاجة خضار جوه السلة
+  const requiredItems = this.cart.filter(item => 
+    requiredProducts.includes(item.id)
+  );
+
+  // لو مفيش ولا منتج منهم → عادي
+  if (requiredItems.length === 0) {
+    return { isValid: true, message: "" };
+  }
+
+  // إجمالي كميات المنتجات اللي محتاجة خضار
+  const totalRequiredQuantity = requiredItems.reduce((total, item) => {
+    return total + item.quantity;
+  }, 0);
+
+  // المنتجات التكميلية في السلة
+  const complementaryItems = this.cart.filter(item => 
+    complementaryProducts.includes(item.id)
+  );
+
+  // مفيش خضار خالص
+  if (complementaryItems.length === 0) {
+    return { 
+      isValid: false, 
+      message: '⚠️ يجب إضافة خضروات بسمة عند طلب الملوخية أو البامية (ممتازه / زيرو / إكسترا) بنفس الكمية أو أكثر'
+    };
+  }
+
+  // إجمالي الخضار
+  const totalComplementaryQuantity = complementaryItems.reduce((total, item) => {
+    return total + item.quantity;
+  }, 0);
+
+  // الخضار أقل من المطلوب
+  if (totalComplementaryQuantity < totalRequiredQuantity) {
+    return { 
+      isValid: false, 
+      message: `⚠️ ..خد بالك اي نوع باميه او ملوخيه  لازمن خضار عليهم . كميه الخضروات غير كافية. يجب أن تكون مساوية أو أكبر من المنتجات المطلوبة.\n
+      الكمية الحالية للخضار: ${totalComplementaryQuantity}
+      الكمية المطلوبة: ${totalRequiredQuantity}`
+    };
+  }
+
+  return { isValid: true, message: "" };
+}
       
       // 🛒 المتابعة للدفع
       proceedToCheckout() {
