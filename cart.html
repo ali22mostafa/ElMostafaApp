@@ -876,10 +876,7 @@
       validateRequiredProducts() {
   // المنتجات اللي محتاجة خضار
   const requiredProducts = [
-    'basma-molokhia',
-    'basma-okra-premium',
-    'basma-okra-zero',
-    'basma-okra-extra'
+    'basma-molokhia'
   ];
 
   // الخضار المسموح بيها
@@ -913,7 +910,7 @@
   if (complementaryItems.length === 0) {
     return { 
       isValid: false, 
-      message: '⚠️ يجب إضافة خضروات بسمة عند طلب الملوخية أو البامية (ممتازه / زيرو / إكسترا) بنفس الكمية أو أكثر'
+      message: '⚠️ يجب إضافة خضروات بسمة عند طلب الملوخية  بنفس الكمية أو أكثر'
     };
   }
 
@@ -926,7 +923,7 @@
   if (totalComplementaryQuantity < totalRequiredQuantity) {
     return { 
       isValid: false, 
-      message: `⚠️ ..خد بالك اي نوع باميه او ملوخيه  لازمن خضار عليهم . كميه الخضروات غير كافية. يجب أن تكون مساوية أو أكبر من المنتجات المطلوبة.\n
+      message: `⚠️ ..خد بالك اي   ملوخيه  لازمن خضار عليها  . كميه الخضروات غير كافية. يجب أن تكون مساوية أو أكبر من المنتجات المطلوبة.\n
       الكمية الحالية للخضار: ${totalComplementaryQuantity}
       الكمية المطلوبة: ${totalRequiredQuantity}`
     };
